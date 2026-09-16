@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useMemo, Suspense } from "react";
+import React, { useState, useMemo, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X, ArrowUpDown } from "lucide-react";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/services/products";
+import { Product } from "@/types/product";
 import { categories } from "@/data/categories";
 import { ProductCard } from "@/components/discovery/ProductCard";
 import { CanvasWrapper } from "@/components/layout/CanvasWrapper";
@@ -16,15 +17,29 @@ function ProductsContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("category") || "All";
 
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [sortBy, setSortBy] = useState<string>("featured");
-  const [maxPrice, setMaxPrice] = useState<number>(4000);
+  const [maxPrice, setMaxPrice] = useState<number>(10000);
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
+  const loadData = () => {
+    getProducts().then((data) => {
+      setAllProducts(data);
+    });
+  };
+
+  useEffect(() => {
+    loadData();
+    const handleUpdate = () => loadData();
+    window.addEventListener("nishya_products_updated", handleUpdate);
+    return () => window.removeEventListener("nishya_products_updated", handleUpdate);
+  }, []);
+
   // Filter & Sort computation
   const filteredProducts = useMemo(() => {
-    return products
+    return allProducts
       .filter((product) => {
         if (selectedCategory !== "All" && product.category !== selectedCategory) {
           return false;

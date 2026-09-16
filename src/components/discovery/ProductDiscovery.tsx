@@ -1,11 +1,39 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { ProductGrid } from "@/components/discovery/ProductGrid";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/services/products";
+import { Product } from "@/types/product";
 
-export function ProductDiscovery() {
-  const discoveryProducts = products.slice(4, 8);
+interface ProductDiscoveryProps {
+  content?: Record<string, any>;
+}
+
+export function ProductDiscovery({ content }: ProductDiscoveryProps) {
+  const [items, setItems] = useState<Product[]>([]);
+
+  const loadData = () => {
+    getProducts().then((all) => {
+      // Show up to 8 products for discovery
+      setItems(all.slice(0, 8));
+    });
+  };
+
+  useEffect(() => {
+    loadData();
+
+    // Listen for instant admin updates
+    const handleUpdate = () => loadData();
+    window.addEventListener("nishya_products_updated", handleUpdate);
+    return () => window.removeEventListener("nishya_products_updated", handleUpdate);
+  }, []);
+
+  const heading =
+    content?.heading ||
+    "Discover the finest bags that combine style, elegance and perfection.";
+  const buttonText = content?.button_text || "Explore All Pieces";
 
   return (
     <section className="relative px-4 sm:px-6 md:px-8 lg:px-14 py-12 sm:py-16 lg:py-24 overflow-x-clip">
@@ -20,8 +48,7 @@ export function ProductDiscovery() {
               </span>
             </div>
             <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-luxury-charcoal leading-[1.15]">
-              Discover the finest bags that combine <br className="hidden sm:inline" />
-              <span className="italic font-normal text-luxury-gold">style, elegance</span> and perfection.
+              {heading}
             </h2>
           </div>
 
@@ -29,13 +56,13 @@ export function ProductDiscovery() {
             href="/products"
             className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] font-semibold text-luxury-charcoal hover:text-luxury-gold transition-colors shrink-0 group py-1"
           >
-            <span>Explore All 12 Pieces</span>
+            <span>{buttonText}</span>
             <ArrowRight className="w-4 h-4 text-luxury-gold group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
-        {/* 4-Product Grid (2 on mobile, 4 on desktop) */}
-        <ProductGrid products={discoveryProducts} columns={4} />
+        {/* Dynamic Product Grid */}
+        <ProductGrid products={items} columns={4} />
       </div>
     </section>
   );

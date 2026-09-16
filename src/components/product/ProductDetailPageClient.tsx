@@ -17,6 +17,8 @@ import { ProductInfo } from "@/components/product/ProductInfo";
 import { ProductAccordions } from "@/components/product/ProductAccordions";
 import { RecentlyViewed } from "@/components/product/RecentlyViewed";
 
+import { getProductBySlug } from "@/lib/services/products";
+
 interface ProductDetailPageClientProps {
   product: Product;
   related: Product[];
@@ -26,10 +28,26 @@ export function ProductDetailPageClient({
   product,
   related,
 }: ProductDetailPageClientProps) {
+  const [currentProduct, setCurrentProduct] = useState<Product>(product);
   const { addToCart } = useCart();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showMobileBottomBar, setShowMobileBottomBar] = useState(false);
   const [isAddedMobile, setIsAddedMobile] = useState(false);
+
+  // Sync with CMS updates if available
+  useEffect(() => {
+    setCurrentProduct(product);
+    getProductBySlug(product.slug).then((fresh) => {
+      if (fresh) setCurrentProduct(fresh);
+    });
+    const handleUpdate = () => {
+      getProductBySlug(product.slug).then((fresh) => {
+        if (fresh) setCurrentProduct(fresh);
+      });
+    };
+    window.addEventListener("nishya_products_updated", handleUpdate);
+    return () => window.removeEventListener("nishya_products_updated", handleUpdate);
+  }, [product, product.slug]);
 
   // Initialize wishlist from localStorage
   useEffect(() => {
@@ -37,12 +55,12 @@ export function ProductDetailPageClient({
       const stored = localStorage.getItem("pursia_wishlist");
       if (stored) {
         const list: string[] = JSON.parse(stored);
-        setIsWishlisted(list.includes(product.id));
+        setIsWishlisted(list.includes(currentProduct.id));
       }
     } catch {
       // Storage unavailable
     }
-  }, [product.id]);
+  }, [currentProduct.id]);
 
   // Wishlist toggle handler
   const handleToggleWishlist = () => {
@@ -78,15 +96,15 @@ export function ProductDetailPageClient({
   }, []);
 
   const handleMobileAddToCart = () => {
-    addToCart(product, 1);
+    addToCart(currentProduct, 1);
     setIsAddedMobile(true);
     setTimeout(() => setIsAddedMobile(false), 2000);
   };
 
   const galleryImages =
-    product.gallery && product.gallery.length > 0
-      ? product.gallery
-      : [product.image, product.secondaryImage].filter(Boolean) as string[];
+    currentProduct.gallery && currentProduct.gallery.length > 0
+      ? currentProduct.gallery
+      : [currentProduct.image, currentProduct.secondaryImage].filter(Boolean) as string[];
 
   return (
     <CanvasWrapper>
@@ -110,14 +128,14 @@ export function ProductDetailPageClient({
           </Link>
           <ChevronRight className="w-3.5 h-3.5 text-luxury-muted/70" />
           <Link
-            href={`/products?category=${encodeURIComponent(product.category)}`}
+            href={`/products?category=${encodeURIComponent(currentProduct.category)}`}
             className="hover:text-luxury-charcoal transition-colors hidden sm:inline"
           >
-            {product.category}
+            {currentProduct.category}
           </Link>
           <ChevronRight className="w-3.5 h-3.5 text-luxury-muted/70 hidden sm:inline" />
           <span className="text-luxury-charcoal font-semibold truncate max-w-[180px] sm:max-w-none">
-            {product.name}
+            {currentProduct.name}
           </span>
         </nav>
 
@@ -129,8 +147,8 @@ export function ProductDetailPageClient({
           <div className="lg:col-span-7 w-full">
             <ProductGallery
               images={galleryImages}
-              productName={product.name}
-              badge={product.badge}
+              productName={currentProduct.name}
+              badge={currentProduct.badge}
               isWishlisted={isWishlisted}
               onToggleWishlist={handleToggleWishlist}
             />
@@ -139,10 +157,10 @@ export function ProductDetailPageClient({
           {/* RIGHT: 5 COLS (~42% WIDTH) — STICKY PRODUCT INFORMATION & CTAS */}
           <div className="lg:col-span-5 w-full lg:sticky lg:top-28 space-y-6 sm:space-y-8">
             {/* Product Information, Rating, Price, Color Swatches, CTAs */}
-            <ProductInfo product={product} />
+            <ProductInfo product={currentProduct} />
 
             {/* Accordions: Story, Specifications, Material & Care, Shipping */}
-            <ProductAccordions product={product} />
+            <ProductAccordions product={currentProduct} />
           </div>
         </div>
 
@@ -181,7 +199,7 @@ export function ProductDetailPageClient({
         {/* 4. RECENTLY VIEWED PRODUCTS (LocalStorage Persistence)   */}
         {/* ======================================================== */}
         <div className="w-full max-w-[1360px] mx-auto">
-          <RecentlyViewed currentSlug={product.slug} />
+          <RecentlyViewed currentSlug={currentProduct.slug} />
         </div>
       </main>
 
@@ -196,8 +214,8 @@ export function ProductDetailPageClient({
         <div className="flex items-center gap-3 min-w-0">
           <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-luxury-soft shrink-0 border border-luxury-border">
             <Image
-              src={product.image}
-              alt={product.name}
+              src={currentProduct.image}
+              alt={currentProduct.name}
               fill
               sizes="44px"
               className="object-cover"
@@ -205,10 +223,10 @@ export function ProductDetailPageClient({
           </div>
           <div className="min-w-0">
             <h4 className="font-serif text-xs font-bold text-luxury-charcoal truncate">
-              {product.name}
+              {currentProduct.name}
             </h4>
             <span className="font-serif text-xs font-bold text-luxury-gold">
-              {formatPrice(product.price)}
+              {formatPrice(currentProduct.price)}
             </span>
           </div>
         </div>

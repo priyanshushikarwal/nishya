@@ -1,23 +1,47 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, ArrowRight, Check } from "lucide-react";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/services/products";
+import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/utils";
 
-export function WhatsNewSection() {
+interface WhatsNewSectionProps {
+  content?: Record<string, any>;
+}
+
+export function WhatsNewSection({ content }: WhatsNewSectionProps = {}) {
   const { addToCart } = useCart();
   const [addedId, setAddedId] = useState<string | null>(null);
+  const [items, setItems] = useState<Product[]>([]);
+
+  const loadData = () => {
+    getProducts().then((all) => {
+      setItems(all);
+    });
+  };
+
+  useEffect(() => {
+    loadData();
+    const handleUpdate = () => loadData();
+    window.addEventListener("nishya_products_updated", handleUpdate);
+    return () => window.removeEventListener("nishya_products_updated", handleUpdate);
+  }, []);
 
   // Featured hero new arrival
-  const featuredProduct = products[0]; // Safari Quilted Laptop Bag
+  const featuredProduct = items[0];
   // Secondary new arrivals for 2-column grid
-  const secondaryProducts = [products[1], products[2]];
+  const secondaryProducts = [items[1], items[2]].filter(Boolean);
 
-  const handleAddToCart = (product: typeof featuredProduct) => {
+  if (!featuredProduct) return null;
+
+  const headingText = content?.heading || "What's New";
+  const seasonText = content?.season || "Autumn / Winter 2026 Collection";
+
+  const handleAddToCart = (product: Product) => {
     addToCart(product, 1);
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 2000);
@@ -31,10 +55,10 @@ export function WhatsNewSection() {
         {/* ========================================================= */}
         <div className="text-center space-y-2">
           <span className="text-[10px] uppercase tracking-[0.28em] text-luxury-gold font-semibold block">
-            Autumn / Winter 2026 Collection
+            {seasonText}
           </span>
           <h2 className="font-serif text-[28px] sm:text-[32px] font-normal text-luxury-charcoal uppercase tracking-[0.16em]">
-            What&apos;s New
+            {headingText}
           </h2>
           <div className="w-10 h-[1px] bg-luxury-gold/50 mx-auto mt-2" />
         </div>

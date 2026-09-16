@@ -22,22 +22,22 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "Pursia — Luxe Handbags & Purses",
+  title: "Nishya — Luxe Handbags & Purses",
   description: "Discover timeless handbags crafted for modern elegance. Haute Maroquinerie in Florentine calfskin.",
   keywords: [
     "luxury handbags",
     "leather purse",
     "designer clutches",
-    "Pursia",
+    "Nishya",
     "tote bags",
     "haute maroquinerie",
   ],
   openGraph: {
-    title: "Pursia — Luxe Handbags & Purses",
+    title: "Nishya — Luxe Handbags & Purses",
     description: "Discover timeless handbags crafted for modern elegance.",
     type: "website",
     locale: "en_IN",
-    siteName: "Pursia",
+    siteName: "Nishya",
   },
 };
 

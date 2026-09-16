@@ -811,7 +811,7 @@ Section disappears from storefront
 Everything must work using Supabase.
 
 No fake/mock admin data.
-
+l
 No local-only CMS.
 
 No backend other than Supabase.

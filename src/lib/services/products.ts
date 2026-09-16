@@ -3,7 +3,7 @@ import { categories, Category } from "@/data/categories";
 import { Product } from "@/types/product";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
-const CMS_PRODUCTS_KEY = "pursia_cms_products_v1";
+const CMS_PRODUCTS_KEY = "nishya_cms_products_v1";
 
 // Helper to get local memory/storage products
 function getLocalProducts(): Product[] {
@@ -11,7 +11,10 @@ function getLocalProducts(): Product[] {
     try {
       const stored = localStorage.getItem(CMS_PRODUCTS_KEY);
       if (stored) {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
       }
     } catch {}
   }
@@ -22,6 +25,8 @@ function saveLocalProducts(list: Product[]) {
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(CMS_PRODUCTS_KEY, JSON.stringify(list));
+      // Notify all listening components on the storefront immediately
+      window.dispatchEvent(new CustomEvent("nishya_products_updated", { detail: list }));
     } catch {}
   }
 }
@@ -191,16 +196,27 @@ export async function adminGetAllProducts(): Promise<Product[]> {
 }
 
 export async function adminSaveProduct(product: Product): Promise<boolean> {
+  // 1. Supabase direct write if configured
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
       const dbRow = mapProductToDb(product);
-      const { error } = await supabase.from("products").upsert(dbRow);
-      if (!error) return true;
+      await supabase.from("products").upsert(dbRow);
     } catch {}
   }
 
-  // Local storage synchronization
+  // 2. Server API sync
+  if (typeof window !== "undefined") {
+    try {
+      fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(product),
+      }).catch(() => {});
+    } catch {}
+  }
+
+  // 3. Local storage synchronization
   const list = getLocalProducts();
   const index = list.findIndex((p) => p.id === product.id || p.slug === product.slug);
   let updated: Product[];
@@ -215,14 +231,24 @@ export async function adminSaveProduct(product: Product): Promise<boolean> {
 }
 
 export async function adminDeleteProduct(id: string): Promise<boolean> {
+  // 1. Supabase direct delete if configured
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
       await supabase.from("products").delete().eq("id", id);
-      return true;
     } catch {}
   }
 
+  // 2. Server API sync
+  if (typeof window !== "undefined") {
+    try {
+      fetch(`/api/products?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      }).catch(() => {});
+    } catch {}
+  }
+
+  // 3. Local storage synchronization
   const list = getLocalProducts();
   const filtered = list.filter((p) => p.id !== id);
   saveLocalProducts(filtered);

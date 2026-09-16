@@ -1,24 +1,49 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, ArrowRight, Check, Star } from "lucide-react";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/services/products";
+import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/utils";
 
-export function CircularFeature() {
+interface CircularFeatureProps {
+  content?: Record<string, any>;
+}
+
+export function CircularFeature({ content }: CircularFeatureProps = {}) {
   const { addToCart } = useCart();
   const [added, setAdded] = useState(false);
+  const [bag, setBag] = useState<Product | null>(null);
 
-  const pyramidBag = products[0];
+  const loadData = () => {
+    getProducts().then((all) => {
+      setBag(all[0] || null);
+    });
+  };
+
+  useEffect(() => {
+    loadData();
+    const handleUpdate = () => loadData();
+    window.addEventListener("nishya_products_updated", handleUpdate);
+    return () => window.removeEventListener("nishya_products_updated", handleUpdate);
+  }, []);
+
+  const pyramidBag = bag;
 
   const handleAdd = () => {
+    if (!pyramidBag) return;
     addToCart(pyramidBag, 1);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
+
+  if (!pyramidBag) return null;
+
+  const tagline = content?.tagline || "The Signature Safari";
+  const subtitle = content?.subtitle || "Where artisanal craftsmanship meets everyday elegance";
 
   return (
     <section className="relative px-4 sm:px-6 md:px-8 lg:px-14 py-14 sm:py-20 lg:py-28 bg-[#F9F6F1] overflow-hidden">
@@ -33,10 +58,10 @@ export function CircularFeature() {
             ✦ Featured Collection ✦
           </span>
           <h2 className="font-serif text-[26px] sm:text-[34px] md:text-[42px] lg:text-5xl font-normal text-[#1F1E24] leading-tight">
-            The Signature Safari
+            {tagline}
           </h2>
           <p className="text-xs sm:text-sm text-[#8A8178] mt-3 max-w-md mx-auto leading-relaxed font-light">
-            Where artisanal craftsmanship meets everyday elegance
+            {subtitle}
           </p>
           <div className="w-12 h-[1.5px] bg-[#B08D57]/50 mx-auto mt-4" />
         </div>
