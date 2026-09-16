@@ -99,7 +99,7 @@ function ProductsContent() {
                 : "bg-luxury-soft text-luxury-muted hover:text-luxury-charcoal hover:bg-luxury-border/60"
             )}
           >
-            All Pieces ({products.length})
+            All Pieces ({allProducts.length})
           </button>
           {categories
             .filter((c) => c.slug !== "all")

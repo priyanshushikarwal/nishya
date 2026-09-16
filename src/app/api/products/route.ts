@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     if (isSupabaseConfigured()) {
       try {
         const supabase = await createClient();
-        await supabase.from("products").upsert({
+        await (supabase.from("products") as any).upsert({
           id: product.id,
           name: product.name,
           slug: product.slug,

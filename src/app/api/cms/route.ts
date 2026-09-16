@@ -50,7 +50,7 @@ export async function POST(req: Request) {
         try {
           const supabase = await createClient();
           for (const sec of data) {
-            await supabase.from("homepage_sections").upsert({
+            await (supabase.from("homepage_sections") as any).upsert({
               id: sec.id,
               title: sec.title,
               subtitle: sec.subtitle,
