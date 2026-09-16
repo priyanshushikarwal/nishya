@@ -40,32 +40,32 @@ interface StoreSettingsData {
 }
 
 const defaultSettings: StoreSettingsData = {
-  brand_name: "PURSIA",
+  brand_name: "NISHYA",
   tagline: "Haute Maroquinerie & Sculptural Handbag Creations",
   logo_url: "/logo.png",
   favicon_url: "/favicon.ico",
   announcement_text:
     "✦ COMPLIMENTARY INSURED PRIORITY DELIVERY ON ORDERS OVER ₹5,000 | ATELIER GUARANTEE ✦",
   announcement_active: true,
-  contact_email: "concierge@pursia.luxury",
+  contact_email: "concierge@nishya.luxury",
   contact_phone: "+91 98200 12345",
   concierge_hours: "Mon – Sat, 10:00 AM – 8:00 PM IST",
   address: "74 Taj Mansions, Colaba Heritage Quarter, Mumbai 400005, India",
-  instagram_url: "https://instagram.com/pursia.luxury",
-  pinterest_url: "https://pinterest.com/pursia",
+  instagram_url: "https://instagram.com/nishya.luxury",
+  pinterest_url: "https://pinterest.com/nishya",
   shipping_policy_text:
-    "Every Pursia creation is packaged in our signature archival hard box with gilded dustbag and dispatched via temperature-controlled, insured priority express courier.",
+    "Every Nishya creation is packaged in our signature archival hard box with gilded dustbag and dispatched via temperature-controlled, insured priority express courier.",
   return_policy_text:
     "Complimentary 14-day white-glove inspection return and exchange service for pristine, unworn creations with intact security seals.",
   footer_tagline:
-    "Pursia creates architectural handbag silhouettes sculpted in full-grain Italian leather with hand-polished 18k gold hardware.",
-  seo_title: "Pursia — Luxe Handbags & Haute Maroquinerie",
+    "Nishya creates architectural handbag silhouettes sculpted in full-grain Italian leather with hand-polished 18k gold hardware.",
+  seo_title: "Nishya — Luxe Handbags & Haute Maroquinerie",
   seo_description:
     "Explore luxury handcrafted leather handbags, totes, clutches, and architectural evening silhouettes engineered in full-grain Italian calfskin.",
   seo_og_image: "/images/nishya/carry_your_story_pink_arch.jpg",
 };
 
-const LOCAL_SETTINGS_KEY = "pursia_store_settings_v1";
+const LOCAL_SETTINGS_KEY = "nishya_store_settings_v1";
 
 export default function StoreSettingsPage() {
   const [settings, setSettings] = useState<StoreSettingsData>(defaultSettings);

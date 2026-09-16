@@ -78,7 +78,7 @@ export function CartDrawer() {
               <span className="truncate pr-2">
                 {isFreeShipping ? (
                   <span className="text-emerald-700 font-semibold text-[11px] sm:text-xs">
-                    ✓ Compliments of Pursia: Free Delivery Unlocked!
+                    ✓ Compliments of Nishya: Free Delivery Unlocked!
                   </span>
                 ) : (
                   <span className="text-[11px] sm:text-xs">

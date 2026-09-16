@@ -17,7 +17,7 @@ export function Header() {
       <header className="sticky top-0 z-40 bg-white border-b border-luxury-border/60 transition-all duration-300">
         <div className="w-full max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-12 h-14 sm:h-16 md:h-20 flex items-center justify-between">
           {/* ========================================================= */}
-          {/* MOBILE NAVBAR (< md): ☰ SEARCH | PURSIA | ♡ 🛍 👤        */}
+          {/* MOBILE NAVBAR (< md): ☰ SEARCH | NISHYA | ♡ 🛍 👤        */}
           {/* ========================================================= */}
           <div className="flex md:hidden w-full items-center justify-between">
             {/* Left: Hamburger & Search (Thin line icons, no boxes) */}
@@ -38,11 +38,11 @@ export function Header() {
               </button>
             </div>
 
-            {/* Center: PURSIA wordmark */}
+            {/* Center: NISHYA wordmark */}
             <div className="flex items-center justify-center">
               <Link href="/" className="group">
                 <span className="font-serif text-2xl font-bold tracking-[0.22em] uppercase text-luxury-charcoal group-hover:text-luxury-gold transition-colors">
-                  PURSIA
+                  NISHYA
                 </span>
               </Link>
             </div>
@@ -96,7 +96,7 @@ export function Header() {
 
               <Link href="/" className="group flex items-center gap-2">
                 <span className="font-serif text-2xl sm:text-3xl font-bold tracking-[0.2em] uppercase text-luxury-charcoal group-hover:text-luxury-gold transition-colors duration-300">
-                  PURSIA
+                  NISHYA
                 </span>
               </Link>
             </div>

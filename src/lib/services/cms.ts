@@ -51,8 +51,8 @@ const defaultHomepageSections: HomepageSection[] = [
   { id: "lifestyle_model", title: "Editorial Showcase", subtitle: "Effortless grace portrait model layout", sort_order: 8, is_visible: true, content: { heading: "Effortless Grace for Every Occasion", handwritten: "Designed for every occasion" } },
   { id: "everyday_section", title: "Daily Belongings Section", subtitle: "Everyday split editorial with gold seal", sort_order: 9, is_visible: true, content: { heading: "For your everyday Belongings", seal_text: "ATELIER GENUINE LEATHER" } },
   { id: "uniqueness_section", title: "Designed for Uniqueness", subtitle: "Artisanal individuality magazine block", sort_order: 10, is_visible: true, content: { heading: "Designed for Uniqueness", quote: "True luxury is having what nobody else possesses." } },
-  { id: "instagram_gallery", title: "Social Editorial Gallery", subtitle: "#PURSIA BAGS seasonal lookbook grid", sort_order: 11, is_visible: true, content: { hashtag: "#PURSIA BAGS", heading: "Unbox Your New Favourite" } },
-  { id: "footer", title: "Footer & Newsletter", subtitle: "Atelier multi-column footer", sort_order: 12, is_visible: true, content: { tagline: "Timeless handbags crafted for modern elegance.", email: "concierge@pursia.luxury" } },
+  { id: "instagram_gallery", title: "Social Editorial Gallery", subtitle: "#NISHYA BAGS seasonal lookbook grid", sort_order: 11, is_visible: true, content: { hashtag: "#NISHYA BAGS", heading: "Unbox Your New Favourite" } },
+  { id: "footer", title: "Footer & Newsletter", subtitle: "Atelier multi-column footer", sort_order: 12, is_visible: true, content: { tagline: "Timeless handbags crafted for modern elegance.", email: "concierge@nishya.luxury" } },
 ];
 
 const defaultHeroCampaigns: HeroCampaign[] = localHeroSlides.map((slide, idx) => ({
@@ -69,10 +69,10 @@ const defaultHeroCampaigns: HeroCampaign[] = localHeroSlides.map((slide, idx) =>
 }));
 
 // Local storage key helpers for seamless client demo state persistence
-const CMS_HERO_KEY = "pursia_cms_hero_campaigns_v1";
-const CMS_SECTIONS_KEY = "pursia_cms_sections_v1";
-const CMS_PRODUCTS_KEY = "pursia_cms_products_v1";
-const CMS_ORDERS_KEY = "pursia_cms_orders_v1";
+const CMS_HERO_KEY = "nishya_cms_hero_campaigns_v1";
+const CMS_SECTIONS_KEY = "nishya_cms_sections_v1";
+const CMS_PRODUCTS_KEY = "nishya_cms_products_v1";
+const CMS_ORDERS_KEY = "nishya_cms_orders_v1";
 
 // ==============================================================================
 // HERO CAMPAIGNS

@@ -28,7 +28,7 @@ export default function CartPage() {
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
-    if (promoCode.trim().toUpperCase() === "LUXE50" || promoCode.trim().toUpperCase() === "PURSIA") {
+    if (promoCode.trim().toUpperCase() === "LUXE50" || promoCode.trim().toUpperCase() === "NISHYA" || promoCode.trim().toUpperCase() === "PURSIA") {
       setDiscountApplied(true);
       setPromoError("");
     } else {

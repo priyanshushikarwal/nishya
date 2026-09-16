@@ -13,7 +13,7 @@ export function EverydaySection() {
           <div className="relative aspect-[4/3] sm:aspect-[16/11] w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-luxury-border">
             <Image
               src="https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1400&q=85"
-              alt="Model carrying Pursia everyday leather tote"
+              alt="Model carrying Nishya everyday leather tote"
               fill
               sizes="(max-width: 1024px) 100vw, 700px"
               className="object-cover object-center hover:scale-105 transition-transform duration-700"
@@ -49,7 +49,7 @@ export function EverydaySection() {
           </h2>
 
           <p className="text-xs sm:text-sm md:text-base text-luxury-muted font-sans font-light leading-relaxed max-w-lg mx-auto sm:mx-0">
-            Spacious, architectural, and effortlessly refined. Every Pursia tote and shoulder piece is
+            Spacious, architectural, and effortlessly refined. Every Nishya tote and shoulder piece is
             engineered to accommodate your digital life, cosmetics, and treasured mementos while
             preserving razor-sharp poise throughout your day.
           </p>

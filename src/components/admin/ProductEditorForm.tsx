@@ -48,7 +48,7 @@ export function ProductEditorForm({ initialProduct }: ProductEditorFormProps) {
       description: "",
       story: "",
       details: ["Handcrafted full-grain calfskin", "Padded interior with magnetic lock"],
-      care: ["Clean with a soft dry cloth", "Store in Pursia dustbag"],
+      care: ["Clean with a soft dry cloth", "Store in Nishya dustbag"],
       material: "100% Full-grain Italian calfskin",
       dimensions: "28cm (W) x 20cm (H) x 8cm (D)",
       weight: "450g",
@@ -56,7 +56,7 @@ export function ProductEditorForm({ initialProduct }: ProductEditorFormProps) {
       interior: "Main compartment with zippered pocket",
       strap: "Adjustable leather shoulder strap",
       lining: "Satin micro-fiber lining",
-      sku: `PUR-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      sku: `NIS-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
       origin: "Handcrafted in Florence, Italy",
       color: "Warm Cognac",
       colors: [

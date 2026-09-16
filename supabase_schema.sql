@@ -1,5 +1,5 @@
 -- ==============================================================================
--- PURSIA / NISHYA LUXURY HANDBAGS — COMPLETE SUPABASE DATABASE & CMS SCHEMA
+-- NISHYA LUXURY HANDBAGS — COMPLETE SUPABASE DATABASE & CMS SCHEMA
 -- ==============================================================================
 
 -- 1. Enable necessary extensions
@@ -317,14 +317,14 @@ insert into public.homepage_sections (id, title, subtitle, sort_order, is_visibl
 ('lifestyle_model', 'Editorial Showcase', 'Effortless grace portrait model layout', 8, true, '{"heading": "Effortless Grace for Every Occasion", "handwritten": "Designed for every occasion"}'),
 ('everyday_section', 'Daily Belongings Section', 'Everyday split editorial with gold seal', 9, true, '{"heading": "For your everyday Belongings", "seal_text": "ATELIER GENUINE LEATHER"}'),
 ('uniqueness_section', 'Designed for Uniqueness', 'Artisanal individuality magazine block', 10, true, '{"heading": "Designed for Uniqueness", "quote": "True luxury is having what nobody else possesses."}'),
-('instagram_gallery', 'Social Editorial Gallery', '#PURSIA BAGS seasonal lookbook grid', 11, true, '{"hashtag": "#PURSIA BAGS", "heading": "Unbox Your New Favourite"}'),
-('footer', 'Footer & Newsletter', 'Atelier multi-column footer', 12, true, '{"tagline": "Timeless handbags crafted for modern elegance.", "email": "concierge@pursia.luxury"}')
+('instagram_gallery', 'Social Editorial Gallery', '#NISHYA BAGS seasonal lookbook grid', 11, true, '{"hashtag": "#NISHYA BAGS", "heading": "Unbox Your New Favourite"}'),
+('footer', 'Footer & Newsletter', 'Atelier multi-column footer', 12, true, '{"tagline": "Timeless handbags crafted for modern elegance.", "email": "concierge@nishya.luxury"}')
 on conflict (id) do nothing;
 
 -- Seed Store Settings
 insert into public.store_settings (key, value) values
-('brand', '{"name": "Pursia", "tagline": "Haute Maroquinerie", "currency": "INR", "symbol": "₹"}'),
-('contact', '{"email": "concierge@pursia.luxury", "phone": "+91 98765 43210", "address": "Jaipur Atelier & Milan Showroom"}'),
-('shipping', '{"free_shipping_threshold": 5000, "estimated_days": "3-5 business days", "courier": "Insured Express Priority"}'),
-('seo', '{"default_title": "Pursia — Luxe Handbags & Purses", "default_description": "Discover timeless luxury handbags crafted with architectural elegance in full-grain calfskin."}')
+('brand', '{"name": "Nishya", "tagline": "Haute Maroquinerie", "currency": "INR", "symbol": "₹"}'),
+('announcement', '{"text": "✦ COMPLIMENTARY EXPRESS INSURED SHIPPING ON ORDERS OVER ₹5,000 ✦", "active": true}'),
+('shipping', '{"free_shipping_threshold": 5000, "standard_fee": 250, "estimated_days": "2-4 Business Days"}'),
+('seo', '{"default_title": "Nishya — Luxe Handbags & Purses", "default_description": "Discover timeless luxury handbags crafted with architectural elegance in full-grain calfskin."}')
 on conflict (key) do nothing;

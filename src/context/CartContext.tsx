@@ -22,7 +22,7 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const STORAGE_KEY = "pursia_cart_items_v1";
+const STORAGE_KEY = "nishya_cart_items_v1";
 const FREE_SHIPPING_THRESHOLD = 5000;
 
 export function CartProvider({ children }: { children: React.ReactNode }) {

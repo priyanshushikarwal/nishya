@@ -43,10 +43,10 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           <div className="flex items-center justify-between border-b border-luxury-border pb-4">
             <div className="flex items-center gap-2.5">
               <span className="w-9 h-9 rounded-full bg-luxury-charcoal text-white flex items-center justify-center font-serif text-base font-bold shadow-xs">
-                P
+                N
               </span>
               <span className="font-serif text-2xl font-bold tracking-[0.18em] uppercase text-luxury-charcoal">
-                Pursia
+                Nishya
               </span>
             </div>
             <button
@@ -142,7 +142,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           <div className="space-y-1.5 text-xs text-luxury-muted">
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-luxury-gold shrink-0" />
-              <span>concierge@pursia.luxury</span>
+              <span>concierge@nishya.luxury</span>
             </div>
             <div className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-luxury-gold shrink-0" />

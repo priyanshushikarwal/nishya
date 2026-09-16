@@ -14,16 +14,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!product) {
     return {
-      title: "Piece Not Found | Pursia — Luxe Handbags",
+      title: "Piece Not Found | Nishya — Luxe Handbags",
       description: "The requested luxury creation could not be found.",
     };
   }
 
   return {
-    title: `${product.name} | Pursia — Luxe Handbags & Purses`,
+    title: `${product.name} | Nishya — Luxe Handbags & Purses`,
     description: product.description,
     openGraph: {
-      title: `${product.name} | Pursia Haute Maroquinerie`,
+      title: `${product.name} | Nishya Haute Maroquinerie`,
       description: product.description,
       images: [
         {

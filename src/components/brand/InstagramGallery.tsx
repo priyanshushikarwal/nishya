@@ -32,7 +32,7 @@ const galleryImages = [
   {
     url: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=85",
     handle: "@aurora.milan",
-    caption: "Sculptural simplicity with Pursia",
+    caption: "Sculptural simplicity with Nishya",
   },
 ];
 
@@ -43,14 +43,14 @@ export function InstagramGallery() {
         {/* Header */}
         <div className="text-center space-y-2">
           <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] font-semibold text-luxury-gold">
-            #PURSIA BAGS
+            #NISHYA BAGS
           </span>
           <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-luxury-charcoal">
             Unbox Your <span className="italic font-normal text-luxury-gold">New Favourite</span>
           </h2>
           <div className="pt-1">
             <HandwrittenLabel rotate="left" color="gold" className="text-sm sm:text-base lg:text-xl">
-              Tag @pursia.luxury to be featured in our seasonal lookbook
+              Tag @nishya.luxury to be featured in our seasonal lookbook
             </HandwrittenLabel>
           </div>
         </div>
@@ -67,7 +67,7 @@ export function InstagramGallery() {
             >
               <Image
                 src={img.url}
-                alt={`Pursia Bag Instagram showcase by ${img.handle}`}
+                alt={`Nishya Bag Instagram showcase by ${img.handle}`}
                 fill
                 sizes="(max-width: 640px) 190px, (max-width: 1024px) 220px, 16vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"

@@ -11,7 +11,7 @@ export const categories: Category[] = [
     id: "all",
     name: "All Bags",
     slug: "all",
-    description: "Browse the entire Pursia haute couture collection",
+    description: "Browse the entire Nishya haute couture collection",
     count: 12,
   },
   {

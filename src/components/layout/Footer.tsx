@@ -69,11 +69,11 @@ export function Footer() {
         <div className="lg:col-span-4 space-y-4 text-center sm:text-left">
           <Link href="/" className="inline-block">
             <span className="font-serif text-2xl sm:text-3xl font-bold tracking-[0.2em] uppercase text-white hover:text-luxury-gold transition-colors">
-              Pursia
+              Nishya
             </span>
           </Link>
           <p className="text-xs sm:text-sm text-white/65 font-sans font-light leading-relaxed max-w-sm mx-auto sm:mx-0">
-            Pursia redefines the modern purse through architectural poise, master-tanned Italian
+            Nishya redefines the modern purse through architectural poise, master-tanned Italian
             leathers, and understated gilded hardware. Designed for confidence.
           </p>
 
@@ -84,7 +84,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="w-11 h-11 rounded-full bg-white/5 hover:bg-luxury-gold flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer"
-              aria-label="Pursia on Instagram"
+              aria-label="Nishya on Instagram"
             >
               <InstagramIcon className="w-4 h-4" />
             </a>
@@ -93,7 +93,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="w-11 h-11 rounded-full bg-white/5 hover:bg-luxury-gold flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer"
-              aria-label="Pursia on Facebook"
+              aria-label="Nishya on Facebook"
             >
               <FacebookIcon className="w-4 h-4" />
             </a>
@@ -102,7 +102,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="w-11 h-11 rounded-full bg-white/5 hover:bg-luxury-gold flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer"
-              aria-label="Pursia on Pinterest"
+              aria-label="Nishya on Pinterest"
             >
               <PinterestIcon className="w-4 h-4" />
             </a>
@@ -215,7 +215,7 @@ export function Footer() {
         {/* Newsletter (4 cols on desktop) */}
         <div className="lg:col-span-4 space-y-3 pt-2 lg:pt-0">
           <h5 className="text-[11px] uppercase tracking-[0.25em] font-semibold text-luxury-gold">
-            The Pursia Gazette
+            The Nishya Gazette
           </h5>
           <p className="text-xs text-white/70 font-light leading-relaxed">
             Join our world of timeless elegance. Receive private invitations to capsule previews
@@ -243,7 +243,7 @@ export function Footer() {
 
           {subscribed && (
             <p className="text-[11px] text-emerald-400 mt-1">
-              ✓ Welcome to Pursia. An invitation has been dispatched to your inbox.
+              ✓ Welcome to Nishya. An invitation has been dispatched to your inbox.
             </p>
           )}
         </div>
@@ -252,7 +252,7 @@ export function Footer() {
       {/* Copyright Strip */}
       <div className="w-full max-w-[1360px] mx-auto pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-white/50 text-center sm:text-left">
         <div>
-          © {new Date().getFullYear()} Pursia Haute Maroquinerie. All rights reserved.
+          © {new Date().getFullYear()} Nishya Haute Maroquinerie. All rights reserved.
         </div>
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
           <span className="hover:text-white/80 cursor-pointer transition-colors py-1">Privacy Policy</span>

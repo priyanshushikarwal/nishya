@@ -39,7 +39,7 @@ export function VideoModal({ isOpen, onClose }: VideoModalProps) {
               Behind the Atelier
             </span>
             <h3 className="font-serif text-lg text-white font-medium">
-              Pursia Haute Maroquinerie Film
+              Nishya Haute Maroquinerie Film
             </h3>
           </div>
           <button
@@ -56,7 +56,7 @@ export function VideoModal({ isOpen, onClose }: VideoModalProps) {
           <iframe
             className="w-full h-full"
             src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&controls=1&rel=0"
-            title="Pursia Luxury Fashion Film"
+            title="Nishya Luxury Fashion Film"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />

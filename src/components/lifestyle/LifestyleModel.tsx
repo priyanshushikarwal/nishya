@@ -22,7 +22,7 @@ export function LifestyleModel() {
           <div className="relative w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[460px] aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-luxury-border">
             <Image
               src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1000&q=85"
-              alt="Fashion editorial model with Pursia evening clutch"
+              alt="Fashion editorial model with Nishya evening clutch"
               fill
               sizes="(max-width: 768px) 100vw, 460px"
               className="object-cover object-top hover:scale-105 transition-transform duration-700"
@@ -59,7 +59,7 @@ export function LifestyleModel() {
           </h2>
 
           <p className="text-xs sm:text-sm md:text-base text-luxury-muted font-sans font-light leading-relaxed max-w-lg mx-auto sm:mx-0">
-            From sunrise boardrooms to midnight galas, Pursia handbags balance sculptural drama with
+            From sunrise boardrooms to midnight galas, Nishya handbags balance sculptural drama with
             practical weightlessness. Hand-stitched seams and buttery lambskin linings deliver a tactile
             experience second to none.
           </p>

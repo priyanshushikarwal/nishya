@@ -434,7 +434,7 @@ export default function AdminHeroManager() {
                 {/* Simulated Storefront Header */}
                 <div className="pt-7 px-4 pb-2 bg-[#F7F4EF] border-b border-black/5 flex items-center justify-between shrink-0 z-40">
                   <span className="font-serif text-base font-bold tracking-widest text-[#1F1E24]">
-                    PURSIA
+                    NISHYA
                   </span>
                   <span className="text-[9px] uppercase tracking-widest font-semibold px-2 py-0.5 rounded-full bg-black/5 text-[#1F1E24]">
                     ATELIER

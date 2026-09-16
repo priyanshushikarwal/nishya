@@ -52,7 +52,7 @@ export function ProductDetailPageClient({
   // Initialize wishlist from localStorage
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("pursia_wishlist");
+      const stored = localStorage.getItem("nishya_wishlist");
       if (stored) {
         const list: string[] = JSON.parse(stored);
         setIsWishlisted(list.includes(currentProduct.id));
@@ -67,14 +67,14 @@ export function ProductDetailPageClient({
     setIsWishlisted((prev) => {
       const next = !prev;
       try {
-        const stored = localStorage.getItem("pursia_wishlist");
+        const stored = localStorage.getItem("nishya_wishlist");
         let list: string[] = stored ? JSON.parse(stored) : [];
         if (next) {
           if (!list.includes(product.id)) list.push(product.id);
         } else {
           list = list.filter((id) => id !== product.id);
         }
-        localStorage.setItem("pursia_wishlist", JSON.stringify(list));
+        localStorage.setItem("nishya_wishlist", JSON.stringify(list));
       } catch {
         // Ignore
       }

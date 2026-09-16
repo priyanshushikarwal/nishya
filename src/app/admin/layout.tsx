@@ -85,7 +85,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
           <div className="p-6 border-b border-white/10 flex items-center justify-between">
             <Link href="/admin" className="space-y-0.5">
               <span className="font-serif text-xl font-bold tracking-[0.2em] text-white block">
-                PURSIA
+                NISHYA
               </span>
               <span className="text-[9px] uppercase tracking-[0.3em] text-luxury-gold font-semibold block">
                 Atelier CMS

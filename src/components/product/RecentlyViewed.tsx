@@ -9,7 +9,7 @@ interface RecentlyViewedProps {
   currentSlug: string;
 }
 
-const STORAGE_KEY = "pursia_recently_viewed_slugs";
+const STORAGE_KEY = "nishya_recently_viewed_slugs";
 
 export function RecentlyViewed({ currentSlug }: RecentlyViewedProps) {
   const [recentProducts, setRecentProducts] = useState<Product[]>([]);

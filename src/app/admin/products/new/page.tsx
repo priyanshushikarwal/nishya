@@ -21,7 +21,7 @@ export default function NewProductPage() {
             Create Luxury Creation
           </h1>
           <p className="font-sans text-xs text-luxury-muted">
-            Add a handcrafted handbag piece to the Pursia collection catalogue.
+            Add a handcrafted handbag piece to the Nishya collection catalogue.
           </p>
         </div>
       </div>

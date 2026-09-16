@@ -32,13 +32,13 @@ export function ProductAccordions({ product }: ProductAccordionsProps) {
     { label: "Closure", value: product.closure || "Heavy-duty antiqued brass zipper with hide pulls" },
     { label: "Strap / Handles", value: product.strap || "Reinforced dual carry handles + adjustable crossbody strap" },
     { label: "Lining", value: product.lining || "Water-resistant micro-twill satin" },
-    { label: "SKU", value: product.sku || `PUR-${product.id.toUpperCase()}` },
+    { label: "SKU", value: product.sku || `NIS-${product.id.toUpperCase()}` },
     { label: "Country of Origin", value: product.origin || "India" },
   ];
 
   const careItems = product.care || [
     "Clean gently with a soft, clean cotton or microfiber cloth.",
-    "Store in the provided Pursia satin dustbag when not in use to prevent dust and scratches.",
+    "Store in the provided Nishya satin dustbag when not in use to prevent dust and scratches.",
     "Keep stuffed with tissue paper to preserve architectural geometry and form.",
     "Avoid direct contact with cosmetic liquids, oils, sanitizers, and prolonged harsh sunlight.",
   ];

@@ -63,7 +63,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <div className="flex items-center justify-between">
           <div className="inline-flex items-center gap-2">
             <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] font-semibold text-luxury-gold">
-              PURSIA ATELIER
+              NISHYA ATELIER
             </span>
             <span className="text-luxury-border">•</span>
             <span className="text-[10px] sm:text-xs uppercase tracking-[0.2em] font-medium text-luxury-muted">

@@ -84,7 +84,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between">
                   <span className="text-luxury-muted">Packaging:</span>
                   <span className="text-luxury-gold font-semibold">
-                    Pursia Keepsake Box & Dustbag
+                    Nishya Keepsake Box & Dustbag
                   </span>
                 </div>
               </div>
@@ -296,7 +296,7 @@ export default function CheckoutPage() {
                   <div className="p-3.5 rounded-xl bg-white border border-luxury-border text-[11px] text-luxury-muted space-y-1">
                     <div className="flex items-center gap-1.5 font-semibold text-luxury-charcoal">
                       <ShieldCheck className="w-3.5 h-3.5 text-luxury-gold shrink-0" />
-                      <span>The Pursia Promise</span>
+                      <span>The Nishya Promise</span>
                     </div>
                     <p>Every piece arrives in signature gold-embossed packaging with certificate of Florentine authenticity.</p>
                   </div>

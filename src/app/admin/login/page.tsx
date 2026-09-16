@@ -10,7 +10,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { login, isSupabaseActive } = useAdminAuth();
 
-  const [email, setEmail] = useState("admin@pursia.luxury");
+  const [email, setEmail] = useState("admin@nishya.luxury");
   const [password, setPassword] = useState("admin123");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ export default function AdminLoginPage() {
   };
 
   const handleFillDemo = () => {
-    setEmail("admin@pursia.luxury");
+    setEmail("admin@nishya.luxury");
     setPassword("admin123");
   };
 
@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
       {/* Top Header */}
       <div className="w-full max-w-6xl mx-auto flex items-center justify-between py-4">
         <Link href="/" className="font-serif text-2xl font-bold tracking-[0.2em] text-white hover:text-luxury-gold transition-colors">
-          PURSIA
+          NISHYA
         </Link>
         <div className="flex items-center gap-2 text-xs text-white/60">
           <div className={`w-2 h-2 rounded-full ${isSupabaseActive ? "bg-emerald-500" : "bg-amber-400 animate-pulse"}`} />
@@ -81,7 +81,7 @@ export default function AdminLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@pursia.luxury"
+                placeholder="admin@nishya.luxury"
                 className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-luxury-gold focus:outline-none text-white text-sm transition-colors"
               />
             </div>
@@ -119,7 +119,7 @@ export default function AdminLoginPage() {
               className="text-[11px] text-white/50 hover:text-luxury-gold transition-colors inline-flex items-center gap-1 cursor-pointer"
             >
               <Database className="w-3.5 h-3.5" />
-              <span>Autofill Demo Credentials (admin@pursia.luxury)</span>
+              <span>Autofill Demo Credentials (admin@nishya.luxury)</span>
             </button>
           </div>
         </div>
@@ -127,7 +127,7 @@ export default function AdminLoginPage() {
 
       {/* Footer */}
       <div className="w-full max-w-6xl mx-auto text-center py-4 text-xs text-white/40">
-        Pursia Haute Maroquinerie &copy; {new Date().getFullYear()} — Restricted Administration
+        Nishya Haute Maroquinerie &copy; {new Date().getFullYear()} — Restricted Administration
       </div>
     </div>
   );

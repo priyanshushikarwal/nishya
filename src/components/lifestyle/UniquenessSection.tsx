@@ -14,7 +14,7 @@ export function UniquenessSection() {
           <div className="relative aspect-[4/3] sm:aspect-[16/11] w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-luxury-border">
             <Image
               src="https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1400&q=85"
-              alt="High fashion model posing with Pursia luxury purse"
+              alt="High fashion model posing with Nishya luxury purse"
               fill
               sizes="(max-width: 1024px) 100vw, 700px"
               className="object-cover object-center hover:scale-105 transition-transform duration-700"

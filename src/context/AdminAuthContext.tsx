@@ -20,7 +20,7 @@ interface AdminAuthContextType {
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
-const ADMIN_SESSION_KEY = "pursia_admin_session_v1";
+const ADMIN_SESSION_KEY = "nishya_admin_session_v1";
 
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -63,7 +63,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           const parsed = JSON.parse(cached);
           if (parsed?.role === "admin") {
             setUser(parsed);
-            document.cookie = "pursia_admin_session=active; path=/; max-age=86400";
+            document.cookie = "nishya_admin_session=active; path=/; max-age=86400";
           }
         }
       } catch {}
@@ -115,7 +115,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
           setUser(adminUser);
           localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
-          document.cookie = "pursia_admin_session=active; path=/; max-age=86400";
+          document.cookie = "nishya_admin_session=active; path=/; max-age=86400";
           setIsLoading(false);
           return { success: true };
         }
@@ -126,17 +126,17 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Default Administrator fallback (Allows instant visual testing)
-    if (email === "admin@pursia.luxury" || email === "admin" || (email.includes("@") && pass.length >= 6)) {
+    if (email === "admin@nishya.luxury" || email === "admin" || (email.includes("@") && pass.length >= 6)) {
       const adminUser: AdminUser = {
         id: "admin-master-01",
-        email: email.includes("@") ? email : "admin@pursia.luxury",
+        email: email.includes("@") ? email : "admin@nishya.luxury",
         name: "Atelier Director",
         role: "admin",
       };
 
       setUser(adminUser);
       localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
-      document.cookie = "pursia_admin_session=active; path=/; max-age=86400";
+      document.cookie = "nishya_admin_session=active; path=/; max-age=86400";
       setIsLoading(false);
       return { success: true };
     }
@@ -144,7 +144,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
     return {
       success: false,
-      error: "Invalid credentials. Use admin@pursia.luxury with password admin123",
+      error: "Invalid credentials. Use admin@nishya.luxury with password admin123",
     };
   };
 
@@ -158,7 +158,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
     setUser(null);
     localStorage.removeItem(ADMIN_SESSION_KEY);
-    document.cookie = "pursia_admin_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "nishya_admin_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.push("/admin/login");
   };
 
