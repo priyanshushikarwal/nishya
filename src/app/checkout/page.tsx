@@ -14,7 +14,8 @@ export default function CheckoutPage() {
   const { items, subtotal, isFreeShipping, clearCart } = useCart();
   const [orderComplete, setOrderComplete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [orderId, setOrderId] = useState("PUR-2026-849201");
+  const [orderId, setOrderId] = useState("NIS-2026-849201");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "Aadya Sharma",
@@ -24,22 +25,49 @@ export default function CheckoutPage() {
     city: "Mumbai",
     state: "Maharashtra",
     postalCode: "400001",
-    paymentMethod: "card",
+    paymentMethod: "card" as "card" | "upi" | "cod",
   });
 
   const shippingFee = isFreeShipping ? 0 : 250;
   const grandTotal = subtotal + shippingFee;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     setIsProcessing(true);
-    const generatedId = `PUR-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderId(generatedId);
-    setTimeout(() => {
+
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customer: formData,
+          items: items.map((i) => ({
+            id: i.product.id,
+            quantity: i.quantity,
+            selectedColor: i.selectedColor,
+          })),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMessage(data.error || "Order processing failed. Please try again.");
+        setIsProcessing(false);
+        return;
+      }
+
+      setOrderId(data.orderId);
       setIsProcessing(false);
       setOrderComplete(true);
       clearCart();
-    }, 1200);
+    } catch (err: any) {
+      setErrorMessage("Network connection error. Please check your connection.");
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -118,6 +146,13 @@ export default function CheckoutPage() {
                   <span>Secure SSL Checkout</span>
                 </div>
               </div>
+
+              {errorMessage && (
+                <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-3">
+                  <span className="font-semibold">Checkout Notice:</span>
+                  <span>{errorMessage}</span>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
                 {/* Form Fields (7 cols on lg:) */}
@@ -215,7 +250,7 @@ export default function CheckoutPage() {
                               type="radio"
                               name="paymentMethod"
                               checked={formData.paymentMethod === m.id}
-                              onChange={() => setFormData({ ...formData, paymentMethod: m.id })}
+                              onChange={() => setFormData({ ...formData, paymentMethod: m.id as "card" | "upi" | "cod" })}
                               className="accent-luxury-gold w-4 h-4"
                             />
                           </div>

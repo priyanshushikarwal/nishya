@@ -30,22 +30,21 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function initAuth() {
-      // 1. If Supabase is configured, check active Supabase auth session
       if (isSupabaseActive) {
         try {
           const supabase = createClient();
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.user) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
             const { data: profile } = await supabase
               .from("profiles")
               .select("role, full_name")
-              .eq("id", session.user.id)
+              .eq("id", user.id)
               .single() as { data: { role?: string; full_name?: string } | null };
 
             if (profile?.role === "admin") {
               setUser({
-                id: session.user.id,
-                email: session.user.email || "",
+                id: user.id,
+                email: user.email || "",
                 name: profile.full_name || "Atelier Master",
                 role: "admin",
               });
@@ -56,18 +55,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         } catch {}
       }
 
-      // 2. Check local admin session cookie/storage
-      try {
-        const cached = localStorage.getItem(ADMIN_SESSION_KEY);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed?.role === "admin") {
-            setUser(parsed);
-            document.cookie = "nishya_admin_session=active; path=/; max-age=86400";
-          }
-        }
-      } catch {}
-
+      setUser(null);
       setIsLoading(false);
     }
 
@@ -77,75 +65,60 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
 
-    if (isSupabaseActive) {
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password: pass,
-        });
-
-        if (error) {
-          setIsLoading(false);
-          return { success: false, error: error.message };
-        }
-
-        if (data.user) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("role, full_name")
-            .eq("id", data.user.id)
-            .single() as { data: { role?: string; full_name?: string } | null };
-
-          if (profile?.role !== "admin") {
-            await supabase.auth.signOut();
-            setIsLoading(false);
-            return {
-              success: false,
-              error: "Access Denied. Only registered administrators can access the atelier CMS.",
-            };
-          }
-
-          const adminUser: AdminUser = {
-            id: data.user.id,
-            email: data.user.email || email,
-            name: profile?.full_name || "Atelier Master",
-            role: "admin",
-          };
-
-          setUser(adminUser);
-          localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
-          document.cookie = "nishya_admin_session=active; path=/; max-age=86400";
-          setIsLoading(false);
-          return { success: true };
-        }
-      } catch (err: any) {
-        setIsLoading(false);
-        return { success: false, error: err.message };
-      }
-    }
-
-    // Default Administrator fallback (Allows instant visual testing)
-    if (email === "admin@nishya.luxury" || email === "admin" || (email.includes("@") && pass.length >= 6)) {
-      const adminUser: AdminUser = {
-        id: "admin-master-01",
-        email: email.includes("@") ? email : "admin@nishya.luxury",
-        name: "Atelier Director",
-        role: "admin",
-      };
-
-      setUser(adminUser);
-      localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(adminUser));
-      document.cookie = "nishya_admin_session=active; path=/; max-age=86400";
+    if (!isSupabaseActive) {
       setIsLoading(false);
-      return { success: true };
+      return {
+        success: false,
+        error: "Supabase backend is not configured. Please check your environment configuration.",
+      };
     }
 
-    setIsLoading(false);
-    return {
-      success: false,
-      error: "Invalid credentials. Use admin@nishya.luxury with password admin123",
-    };
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password: pass,
+      });
+
+      if (error) {
+        setIsLoading(false);
+        return { success: false, error: error.message };
+      }
+
+      if (data.user) {
+        const { data: profile, error: profError } = await supabase
+          .from("profiles")
+          .select("role, full_name")
+          .eq("id", data.user.id)
+          .single() as { data: { role?: string; full_name?: string } | null; error: any };
+
+        if (profError || profile?.role !== "admin") {
+          await supabase.auth.signOut();
+          setIsLoading(false);
+          return {
+            success: false,
+            error: "Access Denied. Only authorized atelier administrators can access this portal.",
+          };
+        }
+
+        const adminUser: AdminUser = {
+          id: data.user.id,
+          email: data.user.email || email,
+          name: profile?.full_name || "Atelier Master",
+          role: "admin",
+        };
+
+        setUser(adminUser);
+        setIsLoading(false);
+        return { success: true };
+      }
+
+      setIsLoading(false);
+      return { success: false, error: "Authentication failed. No user returned." };
+    } catch (err: any) {
+      setIsLoading(false);
+      return { success: false, error: err.message || "An unexpected error occurred." };
+    }
   };
 
   const logout = async () => {
@@ -157,9 +130,8 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     setUser(null);
-    localStorage.removeItem(ADMIN_SESSION_KEY);
-    document.cookie = "nishya_admin_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.push("/admin/login");
+    router.refresh();
   };
 
   return (

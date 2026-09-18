@@ -74,11 +74,20 @@ const CMS_SECTIONS_KEY = "nishya_cms_sections_v1";
 const CMS_PRODUCTS_KEY = "nishya_cms_products_v1";
 const CMS_ORDERS_KEY = "nishya_cms_orders_v1";
 
-// ==============================================================================
-// HERO CAMPAIGNS
-// ==============================================================================
+let heroCampaignsCache: { data: HeroCampaign[]; expiresAt: number } | null = null;
+let homepageSectionsCache: { data: HomepageSection[]; expiresAt: number } | null = null;
+const CMS_CACHE_TTL = 60 * 1000;
+
+export function invalidateCmsCache() {
+  heroCampaignsCache = null;
+  homepageSectionsCache = null;
+}
 
 export async function getHeroCampaigns(): Promise<HeroCampaign[]> {
+  if (heroCampaignsCache && Date.now() < heroCampaignsCache.expiresAt) {
+    return heroCampaignsCache.data;
+  }
+
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -88,6 +97,10 @@ export async function getHeroCampaigns(): Promise<HeroCampaign[]> {
         .order("sort_order", { ascending: true });
 
       if (!error && data && data.length > 0) {
+        heroCampaignsCache = {
+          data: data as HeroCampaign[],
+          expiresAt: Date.now() + CMS_CACHE_TTL,
+        };
         return data as HeroCampaign[];
       }
     } catch {
@@ -98,14 +111,26 @@ export async function getHeroCampaigns(): Promise<HeroCampaign[]> {
   if (typeof window !== "undefined") {
     try {
       const cached = localStorage.getItem(CMS_HERO_KEY);
-      if (cached) return JSON.parse(cached);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        heroCampaignsCache = {
+          data: parsed,
+          expiresAt: Date.now() + CMS_CACHE_TTL,
+        };
+        return parsed;
+      }
     } catch {}
   }
 
+  heroCampaignsCache = {
+    data: defaultHeroCampaigns,
+    expiresAt: Date.now() + CMS_CACHE_TTL,
+  };
   return defaultHeroCampaigns;
 }
 
 export async function saveHeroCampaign(campaign: HeroCampaign): Promise<boolean> {
+  invalidateCmsCache();
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -132,6 +157,7 @@ export async function saveHeroCampaign(campaign: HeroCampaign): Promise<boolean>
 }
 
 export async function saveHeroCampaignsOrder(campaigns: HeroCampaign[]): Promise<boolean> {
+  invalidateCmsCache();
   const reordered = campaigns.map((c, index) => ({
     ...c,
     sort_order: index + 1,
@@ -157,6 +183,7 @@ export async function saveHeroCampaignsOrder(campaigns: HeroCampaign[]): Promise
 }
 
 export async function deleteHeroCampaign(id: string): Promise<boolean> {
+  invalidateCmsCache();
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -178,6 +205,10 @@ export async function deleteHeroCampaign(id: string): Promise<boolean> {
 // ==============================================================================
 
 export async function getHomepageSections(): Promise<HomepageSection[]> {
+  if (homepageSectionsCache && Date.now() < homepageSectionsCache.expiresAt) {
+    return homepageSectionsCache.data;
+  }
+
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -187,6 +218,10 @@ export async function getHomepageSections(): Promise<HomepageSection[]> {
         .order("sort_order", { ascending: true });
 
       if (!error && data && data.length > 0) {
+        homepageSectionsCache = {
+          data: data as HomepageSection[],
+          expiresAt: Date.now() + CMS_CACHE_TTL,
+        };
         return data as HomepageSection[];
       }
     } catch {}
@@ -195,14 +230,26 @@ export async function getHomepageSections(): Promise<HomepageSection[]> {
   if (typeof window !== "undefined") {
     try {
       const cached = localStorage.getItem(CMS_SECTIONS_KEY);
-      if (cached) return JSON.parse(cached);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        homepageSectionsCache = {
+          data: parsed,
+          expiresAt: Date.now() + CMS_CACHE_TTL,
+        };
+        return parsed;
+      }
     } catch {}
   }
 
+  homepageSectionsCache = {
+    data: defaultHomepageSections,
+    expiresAt: Date.now() + CMS_CACHE_TTL,
+  };
   return defaultHomepageSections;
 }
 
 export async function saveHomepageSections(sections: HomepageSection[]): Promise<boolean> {
+  invalidateCmsCache();
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -336,16 +383,49 @@ export async function uploadMediaFile(
   file: File,
   bucket: "product-media" | "cms-media" = "product-media"
 ): Promise<{ url: string; error?: string }> {
+  // 1. Strict File Size Enforcement (Max 5MB)
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+  if (file.size > MAX_FILE_SIZE) {
+    return { url: "", error: "File exceeds the 5MB size limit for media assets." };
+  }
+
+  // 2. Strict MIME Type Whitelist
+  const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
+  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+    return {
+      url: "",
+      error: "Invalid file format. Only JPG, PNG, and WebP images are permitted.",
+    };
+  }
+
+  // 3. Strict File Extension Whitelist & Path Traversal Prevention
+  const fileExt = (file.name.split(".").pop() || "").toLowerCase();
+  const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
+  if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
+    return {
+      url: "",
+      error: "Invalid file extension. Only .jpg, .jpeg, .png, and .webp are allowed.",
+    };
+  }
+
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+      // Generate clean, sanitized cryptographic filename
+      const cleanBase = file.name
+        .replace(/\.[^/.]+$/, "")
+        .replace(/[^a-zA-Z0-9-_]/g, "_")
+        .slice(0, 30);
+      const fileName = `${Date.now()}_${cleanBase}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type,
+        });
 
       if (!uploadError) {
         const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);

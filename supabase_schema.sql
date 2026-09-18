@@ -167,22 +167,33 @@ alter table public.store_settings enable row level security;
 
 -- Helper function to check if current authenticated user is an admin
 create or replace function public.is_admin()
-returns boolean as $$
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
 begin
   return exists (
     select 1 from public.profiles
     where id = auth.uid() and role = 'admin'
   );
 end;
-$$ language plpgsql security definer;
+$$;
 
 -- Profiles policies
 create policy "Users can read own profile or admin can read all"
   on public.profiles for select
   using (auth.uid() = id or public.is_admin());
 
-create policy "Admins can update profiles"
+create policy "Users can update own profile non-role fields"
   on public.profiles for update
+  using (auth.uid() = id or public.is_admin())
+  with check (
+    public.is_admin() or (role = 'customer')
+  );
+
+create policy "Admins have full access to profiles"
+  on public.profiles for all
   using (public.is_admin());
 
 -- Categories policies (Public can view visible categories, admin has full access)
@@ -221,18 +232,42 @@ create policy "Admins can manage homepage sections"
   on public.homepage_sections for all
   using (public.is_admin());
 
--- Orders policies (Customers can create, Admins can read & update all)
-create policy "Anyone can insert order"
+-- Orders policies (Customers can view own orders, admins have full access, secure insertion)
+create policy "Customers can view own orders"
+  on public.orders for select
+  using (
+    customer_email = auth.jwt()->>'email'
+    or public.is_admin()
+  );
+
+create policy "Secure order insertion"
   on public.orders for insert
-  with check (true);
+  with check (
+    payment_status = 'pending'
+    and total >= 0
+    and subtotal >= 0
+  );
 
 create policy "Admins can view and manage orders"
   on public.orders for all
   using (public.is_admin());
 
-create policy "Anyone can insert order items"
+create policy "Secure order items insertion"
   on public.order_items for insert
-  with check (true);
+  with check (
+    quantity > 0
+    and price >= 0
+  );
+
+create policy "Customers can view own order items"
+  on public.order_items for select
+  using (
+    exists (
+      select 1 from public.orders
+      where orders.id = order_items.order_id
+        and (orders.customer_email = auth.jwt()->>'email' or public.is_admin())
+    )
+  );
 
 create policy "Admins can view and manage order items"
   on public.order_items for all
@@ -274,13 +309,20 @@ create policy "Public Access to product-media"
   on storage.objects for select
   using (bucket_id in ('product-media', 'cms-media'));
 
+-- Only verified administrators can upload or delete from media buckets
 create policy "Admin Upload to media buckets"
   on storage.objects for insert
-  with check (bucket_id in ('product-media', 'cms-media') and (auth.role() = 'authenticated' or public.is_admin()));
+  with check (
+    bucket_id in ('product-media', 'cms-media')
+    and public.is_admin()
+  );
 
 create policy "Admin Delete from media buckets"
   on storage.objects for delete
-  using (bucket_id in ('product-media', 'cms-media') and (auth.role() = 'authenticated' or public.is_admin()));
+  using (
+    bucket_id in ('product-media', 'cms-media')
+    and public.is_admin()
+  );
 
 -- ==============================================================================
 -- INITIAL SEED DATA
@@ -328,3 +370,66 @@ insert into public.store_settings (key, value) values
 ('shipping', '{"free_shipping_threshold": 5000, "standard_fee": 250, "estimated_days": "2-4 Business Days"}'),
 ('seo', '{"default_title": "Nishya — Luxe Handbags & Purses", "default_description": "Discover timeless luxury handbags crafted with architectural elegance in full-grain calfskin."}')
 on conflict (key) do nothing;
+
+-- ==============================================================================
+-- HIGH-VOLUME PERFORMANCE INDEXES & CONCURRENCY-SAFE RPCs (10,000+ orders/day)
+-- ==============================================================================
+
+-- B-Tree Performance Indexes
+create index if not exists idx_orders_customer_email on public.orders (customer_email);
+create index if not exists idx_orders_created_at on public.orders (created_at desc);
+create index if not exists idx_orders_payment_status on public.orders (payment_status);
+create index if not exists idx_orders_order_status on public.orders (order_status);
+create index if not exists idx_order_items_order_id on public.order_items (order_id);
+create index if not exists idx_order_items_product_id on public.order_items (product_id);
+create index if not exists idx_products_category on public.products (category);
+create index if not exists idx_products_status_created on public.products (status, created_at desc);
+create index if not exists idx_products_featured on public.products (featured) where featured = true;
+create index if not exists idx_products_slug on public.products (slug);
+create index if not exists idx_hero_campaigns_sort on public.hero_campaigns (is_active, sort_order);
+create index if not exists idx_homepage_sections_sort on public.homepage_sections (is_visible, sort_order);
+create index if not exists idx_reviews_product on public.reviews (product_id, status);
+
+-- Idempotency Support for Orders
+alter table public.orders add column if not exists idempotency_key text unique;
+create index if not exists idx_orders_idempotency on public.orders (idempotency_key) where idempotency_key is not null;
+
+-- Atomic Concurrency-Safe Inventory Decrement RPC
+create or replace function public.decrement_product_stock(p_product_id text, p_quantity integer)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_rows_updated integer;
+begin
+  update public.products
+  set stock_quantity = stock_quantity - p_quantity,
+      in_stock = (stock_quantity - p_quantity > 0),
+      updated_at = timezone('utc'::text, now())
+  where id = p_product_id
+    and stock_quantity >= p_quantity;
+
+  get diagnostics v_rows_updated = row_count;
+  return v_rows_updated > 0;
+end;
+$$;
+
+-- Atomic Stock Restoration RPC
+create or replace function public.restore_product_stock(p_product_id text, p_quantity integer)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  update public.products
+  set stock_quantity = stock_quantity + p_quantity,
+      in_stock = true,
+      updated_at = timezone('utc'::text, now())
+  where id = p_product_id;
+
+  return true;
+end;
+$$;

@@ -22,6 +22,7 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://nishya.luxury"),
   title: "Nishya — Luxe Handbags & Purses",
   description: "Discover timeless handbags crafted for modern elegance. Haute Maroquinerie in Florentine calfskin.",
   keywords: [
