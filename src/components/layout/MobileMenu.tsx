@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { X, ArrowRight, Phone, Mail, Sparkles } from "lucide-react";
 
 interface MobileMenuProps {
@@ -41,14 +42,15 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-luxury-border pb-4">
-            <div className="flex items-center gap-2.5">
-              <span className="w-9 h-9 rounded-full bg-luxury-charcoal text-white flex items-center justify-center font-serif text-base font-bold shadow-xs">
-                N
-              </span>
-              <span className="font-serif text-2xl font-bold tracking-[0.18em] uppercase text-luxury-charcoal">
-                Nishya
-              </span>
-            </div>
+            <Link href="/" onClick={onClose} className="flex items-center py-1">
+              <Image
+                src="/images/nishya/nishya-logo.png"
+                alt="Nishya — Bags For Your Story"
+                width={130}
+                height={35}
+                className="h-7 w-auto object-contain"
+              />
+            </Link>
             <button
               onClick={onClose}
               className="w-11 h-11 rounded-full hover:bg-luxury-soft flex items-center justify-center text-luxury-muted hover:text-luxury-charcoal transition-colors cursor-pointer"

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Check, ShieldCheck, RefreshCw, Truck, ChevronDown } from "lucide-react";
 import { InstagramIcon, FacebookIcon, PinterestIcon } from "@/components/decorative/SocialIcons";
 import { cn } from "@/lib/utils";
@@ -67,10 +68,14 @@ export function Footer() {
       <div className="w-full max-w-[1360px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 pb-10 sm:pb-14 border-b border-white/10">
         {/* Brand Column (4 cols on desktop) */}
         <div className="lg:col-span-4 space-y-4 text-center sm:text-left">
-          <Link href="/" className="inline-block">
-            <span className="font-serif text-2xl sm:text-3xl font-bold tracking-[0.2em] uppercase text-white hover:text-luxury-gold transition-colors">
-              Nishya
-            </span>
+          <Link href="/" className="inline-block py-1">
+            <Image
+              src="/images/nishya/nishya-logo-white.png"
+              alt="Nishya — Bags For Your Story"
+              width={160}
+              height={43}
+              className="h-9 md:h-10 w-auto object-contain transition-transform duration-300 hover:scale-[1.03]"
+            />
           </Link>
           <p className="text-xs sm:text-sm text-white/65 font-sans font-light leading-relaxed max-w-sm mx-auto sm:mx-0">
             Nishya redefines the modern purse through architectural poise, master-tanned Italian

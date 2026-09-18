@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, ShoppingBag, User, Menu, Heart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { SearchModal } from "@/components/cart/SearchModal";
@@ -38,12 +39,17 @@ export function Header() {
               </button>
             </div>
 
-            {/* Center: NISHYA wordmark */}
+            {/* Center: NISHYA brand logo */}
             <div className="flex items-center justify-center">
-              <Link href="/" className="group">
-                <span className="font-serif text-2xl font-bold tracking-[0.22em] uppercase text-luxury-charcoal group-hover:text-luxury-gold transition-colors">
-                  NISHYA
-                </span>
+              <Link href="/" className="group flex items-center justify-center py-1">
+                <Image
+                  src="/images/nishya/nishya-logo.png"
+                  alt="Nishya — Bags For Your Story"
+                  width={130}
+                  height={35}
+                  priority
+                  className="h-7 sm:h-8 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+                />
               </Link>
             </div>
 
@@ -94,10 +100,15 @@ export function Header() {
                 <Menu className="w-4 h-4" />
               </button>
 
-              <Link href="/" className="group flex items-center gap-2">
-                <span className="font-serif text-2xl sm:text-3xl font-bold tracking-[0.2em] uppercase text-luxury-charcoal group-hover:text-luxury-gold transition-colors duration-300">
-                  NISHYA
-                </span>
+              <Link href="/" className="group flex items-center py-1">
+                <Image
+                  src="/images/nishya/nishya-logo.png"
+                  alt="Nishya — Bags For Your Story"
+                  width={160}
+                  height={43}
+                  priority
+                  className="h-9 md:h-10 lg:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+                />
               </Link>
             </div>
 
