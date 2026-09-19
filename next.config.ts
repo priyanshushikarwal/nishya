@@ -55,14 +55,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${goBackendURL}/api/:path*`,
-      },
-    ];
-  },
   allowedDevOrigins: [
     "localhost",
     "127.0.0.1",
