@@ -14,6 +14,6 @@
     "NEXT_PUBLIC_SUPABASE_URL": "https://wbrxwsenrilaxjgdeish.supabase.co",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indicnh3c2VucmlsYXhqZ2RlaXNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MTg0MjgsImV4cCI6MjEwNTI5NDQyOH0.MMtXQZHdFWK7kr2BXn_o9MEfuorwp9FUnEm6KoV75xE",
     "NEXT_PUBLIC_RAZORPAY_KEY_ID": "rzp_test_Te2wCxAX1j4qSL",
-    "GO_BACKEND_URL": "http://72.61.245.231:8080"
+    "GO_BACKEND_URL": "http://72.61.245.231.sslip.io:8080"
   }
 }
