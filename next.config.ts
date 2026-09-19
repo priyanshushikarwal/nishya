@@ -42,8 +42,8 @@ const securityHeaders = [
   },
 ];
 
-// Go backend URL (configurable via env, defaults to localhost:8080)
-const goBackendURL = process.env.GO_BACKEND_URL || "http://localhost:8080";
+// Go backend URL (configurable via env, defaults to live Hostinger VPS Go API)
+const goBackendURL = process.env.GO_BACKEND_URL || "http://72.61.245.231:8080";
 
 const nextConfig: NextConfig = {
   output: "standalone",
