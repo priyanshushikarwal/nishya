@@ -54,6 +54,6 @@ sleep 5
 
 echo "========================================================"
 echo "🎉 BACKEND DEPLOYED SUCCESSFULLY!"
-echo "⚡ Live Health Check: http://$(curl -s ifconfig.me)/api/health"
+echo "⚡ Live Health Check: http://$(curl -s ifconfig.me):8080/api/health"
 echo "========================================================"
 docker compose ps
