@@ -41,3 +41,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Go backend
+/backend/nishya-api
+/backend/nishya-api.exe
+/backend/nishya-api-linux
+/backend/data/
+

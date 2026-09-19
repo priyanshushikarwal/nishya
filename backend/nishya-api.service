@@ -1,0 +1,22 @@
+[Unit]
+Description=Nishya Luxury Go REST API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/nishya-api
+ExecStart=/var/www/nishya-api/nishya-api-linux
+Restart=always
+RestartSec=5
+EnvironmentFile=/var/www/nishya-api/.env
+LimitNOFILE=65535
+
+# Security sandbox
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

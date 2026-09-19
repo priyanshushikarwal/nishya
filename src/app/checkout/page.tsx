@@ -16,6 +16,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderId, setOrderId] = useState("NIS-2026-849201");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [confirmedPaymentId, setConfirmedPaymentId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "Aadya Sharma",
@@ -31,11 +32,25 @@ export default function CheckoutPage() {
   const shippingFee = isFreeShipping ? 0 : 250;
   const grandTotal = subtotal + shippingFee;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-    setIsProcessing(true);
+  // Dynamic Razorpay SDK script loader
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof window === "undefined") return resolve(false);
+      if ((window as any).Razorpay) return resolve(true);
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
+  const finalizeOrder = async (paymentDetails?: {
+    paymentId: string;
+    razorpayOrderId?: string;
+    razorpaySignature?: string;
+  }) => {
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -49,6 +64,9 @@ export default function CheckoutPage() {
             quantity: i.quantity,
             selectedColor: i.selectedColor,
           })),
+          paymentId: paymentDetails?.paymentId,
+          razorpayOrderId: paymentDetails?.razorpayOrderId,
+          razorpaySignature: paymentDetails?.razorpaySignature,
         }),
       });
 
@@ -57,15 +75,122 @@ export default function CheckoutPage() {
       if (!res.ok) {
         setErrorMessage(data.error || "Order processing failed. Please try again.");
         setIsProcessing(false);
-        return;
+        return false;
       }
 
       setOrderId(data.orderId);
+      if (paymentDetails?.paymentId) {
+        setConfirmedPaymentId(paymentDetails.paymentId);
+      }
       setIsProcessing(false);
       setOrderComplete(true);
       clearCart();
-    } catch (err: any) {
+      return true;
+    } catch {
       setErrorMessage("Network connection error. Please check your connection.");
+      setIsProcessing(false);
+      return false;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setIsProcessing(true);
+
+    // 1. If Concierge Pay on Delivery, directly place order
+    if (formData.paymentMethod === "cod") {
+      await finalizeOrder();
+      return;
+    }
+
+    // 2. Online Payment (Card / UPI) via Razorpay
+    try {
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded) {
+        setErrorMessage("Razorpay payment gateway failed to load. Please check your internet connection.");
+        setIsProcessing(false);
+        return;
+      }
+
+      // Pre-create Razorpay Order via Go backend
+      const rzpOrderRes = await fetch("/api/payment/razorpay/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: grandTotal,
+          currency: "INR",
+          receipt: `rcpt_${Date.now()}`,
+        }),
+      });
+
+      const rzpOrderData = await rzpOrderRes.json();
+      if (!rzpOrderRes.ok || !rzpOrderData.id) {
+        setErrorMessage(rzpOrderData.error || "Could not initiate payment. Please try again.");
+        setIsProcessing(false);
+        return;
+      }
+
+      const razorpayKey =
+        rzpOrderData.key_id ||
+        process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
+        "rzp_test_Te2wCxAX1j4qSL";
+
+      // Configure Razorpay Checkout options
+      const options = {
+        key: razorpayKey,
+        amount: rzpOrderData.amount || grandTotal * 100,
+        currency: rzpOrderData.currency || "INR",
+        name: "NISHYA",
+        description: "Atelier Haute Maroquinerie Acquisition",
+        image: "/images/nishya/carry_your_story_pink_arch.jpg",
+        order_id: rzpOrderData.is_mock ? undefined : rzpOrderData.id,
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone.replace(/[^0-9+]/g, ""),
+        },
+        theme: {
+          color: "#151418", // Nishya luxury obsidian black
+        },
+        modal: {
+          ondismiss: () => {
+            setIsProcessing(false);
+          },
+        },
+        handler: async (response: any) => {
+          // Verify payment signature & finalize order
+          const paymentId = response.razorpay_payment_id || `pay_test_${Date.now()}`;
+          await finalizeOrder({
+            paymentId,
+            razorpayOrderId: response.razorpay_order_id || rzpOrderData.id,
+            razorpaySignature: response.razorpay_signature,
+          });
+
+          // Background verification call
+          if (response.razorpay_payment_id && response.razorpay_signature) {
+            fetch("/api/payment/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderId: orderId,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              }),
+            }).catch(() => {});
+          }
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", (resp: any) => {
+        setErrorMessage(resp.error?.description || "Payment authorization was declined.");
+        setIsProcessing(false);
+      });
+      rzp.open();
+    } catch {
+      setErrorMessage("An unexpected error occurred while initiating Razorpay checkout.");
       setIsProcessing(false);
     }
   };
@@ -109,6 +234,22 @@ export default function CheckoutPage() {
                     {formData.address}, {formData.city} - {formData.postalCode}
                   </span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-luxury-muted">Payment:</span>
+                  <span className="text-luxury-charcoal font-medium capitalize">
+                    {formData.paymentMethod === "card"
+                      ? "Credit / Debit Card (Razorpay)"
+                      : formData.paymentMethod === "upi"
+                      ? "Instant UPI (Razorpay)"
+                      : "Concierge Pay on Delivery"}
+                  </span>
+                </div>
+                {confirmedPaymentId && (
+                  <div className="flex justify-between font-mono text-[11px] bg-emerald-50 text-emerald-800 p-2 rounded-lg border border-emerald-200">
+                    <span>Payment Ref:</span>
+                    <span className="font-bold">{confirmedPaymentId}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-luxury-muted">Packaging:</span>
                   <span className="text-luxury-gold font-semibold">
@@ -263,9 +404,18 @@ export default function CheckoutPage() {
                   <button
                     type="submit"
                     disabled={isProcessing || items.length === 0}
-                    className="w-full py-4 rounded-full bg-luxury-charcoal hover:bg-luxury-dark text-white text-xs uppercase tracking-[0.2em] font-semibold transition-all shadow-lg shadow-luxury-charcoal/20 disabled:opacity-50 cursor-pointer min-h-[48px]"
+                    className="w-full py-4 rounded-full bg-luxury-charcoal hover:bg-luxury-dark text-white text-xs uppercase tracking-[0.2em] font-semibold transition-all shadow-lg shadow-luxury-charcoal/20 disabled:opacity-50 cursor-pointer min-h-[48px] flex items-center justify-center gap-2"
                   >
-                    {isProcessing ? "Authorizing Order..." : `Place Order • ${formatPrice(grandTotal)}`}
+                    {isProcessing ? (
+                      "Authorizing..."
+                    ) : formData.paymentMethod === "cod" ? (
+                      `Place Order • ${formatPrice(grandTotal)}`
+                    ) : (
+                      <>
+                        <Lock className="w-3.5 h-3.5 text-luxury-gold" />
+                        <span>Pay via Razorpay • {formatPrice(grandTotal)}</span>
+                      </>
+                    )}
                   </button>
                 </div>
 
