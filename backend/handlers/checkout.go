@@ -213,11 +213,15 @@ func CheckoutHandler(w http.ResponseWriter, r *http.Request) {
 		"paymentMethod": req.Customer.PaymentMethod,
 	})
 
-	// 7. Payment status based on payment ID
+	// 7. Payment status based on payment method
+	// Cash on Delivery (COD): Order is confirmed upon placement, payment remains pending until delivery.
+	// Online Payment (Card / UPI / Razorpay): Both payment and order status remain pending until
+	// cryptographically verified via /api/payment/razorpay/verify.
+	// SECURITY: Never trust client-supplied paymentId alone to mark an order as 'paid'.
+	isCOD := strings.EqualFold(strings.TrimSpace(req.Customer.PaymentMethod), "cod")
 	paymentStatus := "pending"
 	orderStatus := "pending"
-	if req.PaymentID != "" {
-		paymentStatus = "paid"
+	if isCOD {
 		orderStatus = "confirmed"
 	}
 

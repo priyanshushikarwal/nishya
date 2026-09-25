@@ -46,62 +46,44 @@ export default function CheckoutPage() {
     });
   };
 
-  const finalizeOrder = async (paymentDetails?: {
-    paymentId: string;
-    razorpayOrderId?: string;
-    razorpaySignature?: string;
-  }) => {
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          customer: formData,
-          items: items.map((i) => ({
-            id: i.product.id,
-            quantity: i.quantity,
-            selectedColor: i.selectedColor,
-          })),
-          paymentId: paymentDetails?.paymentId,
-          razorpayOrderId: paymentDetails?.razorpayOrderId,
-          razorpaySignature: paymentDetails?.razorpaySignature,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErrorMessage(data.error || "Order processing failed. Please try again.");
-        setIsProcessing(false);
-        return false;
-      }
-
-      setOrderId(data.orderId);
-      if (paymentDetails?.paymentId) {
-        setConfirmedPaymentId(paymentDetails.paymentId);
-      }
-      setIsProcessing(false);
-      setOrderComplete(true);
-      clearCart();
-      return true;
-    } catch {
-      setErrorMessage("Network connection error. Please check your connection.");
-      setIsProcessing(false);
-      return false;
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setIsProcessing(true);
 
-    // 1. If Concierge Pay on Delivery, directly place order
+    // 1. If Concierge Pay on Delivery, directly place order as confirmed/pending payment
     if (formData.paymentMethod === "cod") {
-      await finalizeOrder();
-      return;
+      try {
+        const res = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customer: formData,
+            items: items.map((i) => ({
+              id: i.product.id,
+              quantity: i.quantity,
+              selectedColor: i.selectedColor,
+            })),
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setErrorMessage(data.error || "Order processing failed. Please try again.");
+          setIsProcessing(false);
+          return;
+        }
+
+        setOrderId(data.orderId);
+        setIsProcessing(false);
+        setOrderComplete(true);
+        clearCart();
+        return;
+      } catch {
+        setErrorMessage("Network connection error. Please check your connection.");
+        setIsProcessing(false);
+        return;
+      }
     }
 
     // 2. Online Payment (Card / UPI) via Razorpay
@@ -113,20 +95,44 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Pre-create Razorpay Order via Go backend
+      // Step A: Register the order in database first (in 'pending' payment status)
+      // Prices and subtotal are strictly calculated by the server from the product catalog.
+      const orderRes = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer: formData,
+          items: items.map((i) => ({
+            id: i.product.id,
+            quantity: i.quantity,
+            selectedColor: i.selectedColor,
+          })),
+        }),
+      });
+
+      const orderData = await orderRes.json();
+      if (!orderRes.ok || !orderData.orderId) {
+        setErrorMessage(orderData.error || "Order preparation failed. Please try again.");
+        setIsProcessing(false);
+        return;
+      }
+
+      const createdOrderId = orderData.orderId;
+
+      // Step B: Create Razorpay Order referencing the verified Order ID
+      // Server will fetch the exact amount from the database, preventing any client-side price tampering.
       const rzpOrderRes = await fetch("/api/payment/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: grandTotal,
+          orderId: createdOrderId,
           currency: "INR",
-          receipt: `rcpt_${Date.now()}`,
         }),
       });
 
       const rzpOrderData = await rzpOrderRes.json();
       if (!rzpOrderRes.ok || !rzpOrderData.id) {
-        setErrorMessage(rzpOrderData.error || "Could not initiate payment. Please try again.");
+        setErrorMessage(rzpOrderData.error || "Could not initiate payment gateway session. Please try again.");
         setIsProcessing(false);
         return;
       }
@@ -139,7 +145,7 @@ export default function CheckoutPage() {
       // Configure Razorpay Checkout options
       const options = {
         key: razorpayKey,
-        amount: rzpOrderData.amount || grandTotal * 100,
+        amount: rzpOrderData.amount,
         currency: rzpOrderData.currency || "INR",
         name: "NISHYA",
         description: "Atelier Haute Maroquinerie Acquisition",
@@ -159,26 +165,42 @@ export default function CheckoutPage() {
           },
         },
         handler: async (response: any) => {
-          // Verify payment signature & finalize order
-          const paymentId = response.razorpay_payment_id || `pay_test_${Date.now()}`;
-          await finalizeOrder({
-            paymentId,
-            razorpayOrderId: response.razorpay_order_id || rzpOrderData.id,
-            razorpaySignature: response.razorpay_signature,
-          });
+          setIsProcessing(true);
+          try {
+            const paymentId = response.razorpay_payment_id || `pay_test_${Date.now()}`;
 
-          // Background verification call
-          if (response.razorpay_payment_id && response.razorpay_signature) {
-            fetch("/api/payment/razorpay/verify", {
+            // Step C: Cryptographically verify payment on server before confirming order
+            const verifyRes = await fetch("/api/payment/razorpay/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                orderId: orderId,
-                razorpayOrderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
+                orderId: createdOrderId,
+                razorpayOrderId: response.razorpay_order_id || rzpOrderData.id,
+                razorpayPaymentId: paymentId,
+                razorpaySignature: response.razorpay_signature || "",
               }),
-            }).catch(() => {});
+            });
+
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok || !verifyData.verified) {
+              setErrorMessage(
+                verifyData.error || "Payment verification failed. Please contact concierge support."
+              );
+              setIsProcessing(false);
+              return;
+            }
+
+            // Payment successfully verified by server!
+            setOrderId(createdOrderId);
+            setConfirmedPaymentId(paymentId);
+            setIsProcessing(false);
+            setOrderComplete(true);
+            clearCart();
+          } catch {
+            setErrorMessage(
+              `Payment verification encountered a network error. Your Order ID is #${createdOrderId}. Please contact support.`
+            );
+            setIsProcessing(false);
           }
         },
       };
@@ -189,8 +211,9 @@ export default function CheckoutPage() {
         setIsProcessing(false);
       });
       rzp.open();
-    } catch {
-      setErrorMessage("An unexpected error occurred while initiating Razorpay checkout.");
+    } catch (err: any) {
+      console.error("Razorpay initiation error:", err);
+      setErrorMessage(err?.message || "An unexpected error occurred while initiating Razorpay checkout.");
       setIsProcessing(false);
     }
   };

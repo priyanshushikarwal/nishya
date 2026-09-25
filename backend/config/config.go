@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -17,6 +18,7 @@ type Config struct {
 	CORSOrigin           string
 	RazorpayKeyID        string
 	RazorpayKeySecret    string
+	RazorpayWebhookSecret string
 }
 
 func loadEnvFile(path string) {
@@ -60,11 +62,19 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("DATABASE_URL environment variable is required")
 	}
 
+	isProd := strings.EqualFold(os.Getenv("NODE_ENV"), "production") ||
+		strings.EqualFold(os.Getenv("ENV"), "production") ||
+		strings.EqualFold(os.Getenv("APP_ENV"), "production")
+
 	jwtSecret := os.Getenv("SUPABASE_JWT_SECRET")
 	if jwtSecret == "" {
 		jwtSecret = os.Getenv("SUPABASE_SERVICE_ROLE_KEY")
 	}
 	if jwtSecret == "" {
+		if isProd {
+			return nil, fmt.Errorf("FATAL SECURITY ERROR: SUPABASE_JWT_SECRET or SUPABASE_SERVICE_ROLE_KEY is strictly required in production")
+		}
+		log.Println("⚠️ [SECURITY WARNING] SUPABASE_JWT_SECRET not set. Using local development secret. DO NOT deploy this to production without setting SUPABASE_JWT_SECRET!")
 		jwtSecret = "nishya-local-dev-jwt-secret"
 	}
 
@@ -81,16 +91,18 @@ func Load() (*Config, error) {
 		razorpayKeyID = os.Getenv("NEXT_PUBLIC_RAZORPAY_KEY_ID")
 	}
 	razorpayKeySecret := os.Getenv("RAZORPAY_KEY_SECRET")
+	razorpayWebhookSecret := os.Getenv("RAZORPAY_WEBHOOK_SECRET")
 
 	return &Config{
-		Port:               port,
-		DatabaseURL:        dbURL,
-		SupabaseJWTSecret:  jwtSecret,
-		SupabaseURL:        supabaseURL,
-		SupabaseServiceKey: serviceKey,
-		CORSOrigin:         corsOrigin,
-		RazorpayKeyID:      razorpayKeyID,
-		RazorpayKeySecret:  razorpayKeySecret,
+		Port:                  port,
+		DatabaseURL:           dbURL,
+		SupabaseJWTSecret:     jwtSecret,
+		SupabaseURL:           supabaseURL,
+		SupabaseServiceKey:    serviceKey,
+		CORSOrigin:            corsOrigin,
+		RazorpayKeyID:         razorpayKeyID,
+		RazorpayKeySecret:     razorpayKeySecret,
+		RazorpayWebhookSecret: razorpayWebhookSecret,
 	}, nil
 }
 

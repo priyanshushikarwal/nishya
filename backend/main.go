@@ -93,7 +93,10 @@ func main() {
 		handlers.CreateRazorpayOrderHandler(cfg.RazorpayKeyID, cfg.RazorpayKeySecret),
 	))
 	mux.Handle("/api/payment/razorpay/verify", middleware.RateLimit(checkoutLimiter,
-		handlers.VerifyRazorpayPaymentHandler(cfg.RazorpayKeySecret),
+		handlers.VerifyRazorpayPaymentHandler(cfg.RazorpayKeyID, cfg.RazorpayKeySecret),
+	))
+	mux.Handle("/api/payment/razorpay/webhook", middleware.RateLimit(checkoutLimiter,
+		handlers.RazorpayWebhookHandler(cfg.RazorpayWebhookSecret, cfg.RazorpayKeyID, cfg.RazorpayKeySecret),
 	))
 
 	// Categories — public read, admin write
