@@ -13,6 +13,7 @@ interface SwipeHeroCardProps {
   };
   isInteractive: boolean;
   totalSlides: number;
+  slideIndex?: number;
 }
 
 /**
@@ -26,6 +27,7 @@ export function SwipeHeroCard({
   slide,
   isInteractive,
   totalSlides,
+  slideIndex,
 }: SwipeHeroCardProps) {
   return (
     <div className="relative w-full h-full rounded-[24px] sm:rounded-[28px] overflow-hidden shadow-[0_20px_45px_-10px_rgba(0,0,0,0.22)] border border-black/5 select-none transition-transform duration-300">
@@ -64,18 +66,26 @@ export function SwipeHeroCard({
 
         {/* Slide Counter: 01 / 04 with Progress Line */}
         <div className="text-right select-none pb-0.5">
-          <span className="text-[11px] font-mono tracking-widest font-semibold text-white/90">
-            {typeof slide.id === "number" ? `0${slide.id}` : "01"} / 0{totalSlides}
-          </span>
-          {/* Progress Underline */}
-          <div className="w-12 h-[2px] mt-1 ml-auto flex rounded-full overflow-hidden bg-white/20">
-            <div
-              className="h-full bg-white"
-              style={{
-                width: `${Math.min(100, ((Number(slide.id) || 1) / totalSlides) * 100)}%`,
-              }}
-            />
-          </div>
+          {(() => {
+            const currentNum = slideIndex !== undefined ? slideIndex + 1 : (Number(slide.id) || 1);
+            const formattedCurrent = currentNum < 10 ? `0${currentNum}` : `${currentNum}`;
+            const formattedTotal = totalSlides < 10 ? `0${totalSlides}` : `${totalSlides}`;
+            const progressPercent = Math.min(100, Math.max(0, (currentNum / totalSlides) * 100));
+            return (
+              <>
+                <span className="text-[11px] font-mono tracking-widest font-semibold text-white/90">
+                  {formattedCurrent} / {formattedTotal}
+                </span>
+                {/* Progress Underline */}
+                <div className="w-12 h-[2px] mt-1 ml-auto flex rounded-full overflow-hidden bg-white/20">
+                  <div
+                    className="h-full bg-white transition-all duration-300"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>

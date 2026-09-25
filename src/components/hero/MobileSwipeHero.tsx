@@ -27,15 +27,23 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
       setActiveCampaigns(propCampaigns);
       return;
     }
-    let isMounted = true;
-    getHeroCampaigns().then((data) => {
-      if (isMounted && data && data.length > 0) {
-        const activeOnly = data.filter((c) => c.is_active);
-        setActiveCampaigns(activeOnly.length > 0 ? activeOnly : data);
-      }
-    });
+
+    const loadCampaigns = () => {
+      getHeroCampaigns().then((data) => {
+        if (data && data.length > 0) {
+          const activeOnly = data.filter((c) => c.is_active);
+          setActiveCampaigns(activeOnly.length > 0 ? activeOnly : data);
+        }
+      });
+    };
+
+    loadCampaigns();
+    window.addEventListener("nishya_cms_updated", loadCampaigns);
+    window.addEventListener("focus", loadCampaigns);
+
     return () => {
-      isMounted = false;
+      window.removeEventListener("nishya_cms_updated", loadCampaigns);
+      window.removeEventListener("focus", loadCampaigns);
     };
   }, [propCampaigns]);
 
@@ -202,6 +210,7 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
             cardDistance={cardDistance}
             onClick={handlePrev}
             totalSlides={totalSlides}
+            slideIndex={prevIndex}
           />
 
           {/* 2. CENTER ACTIVE CARD */}
@@ -214,6 +223,7 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
             cardDistance={cardDistance}
             isCenter={true}
             totalSlides={totalSlides}
+            slideIndex={currentIndex}
           />
 
           {/* 3. RIGHT PEEKING CARD */}
@@ -226,6 +236,7 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
             cardDistance={cardDistance}
             onClick={handleNext}
             totalSlides={totalSlides}
+            slideIndex={nextIndex}
           />
         </motion.div>
 
@@ -266,6 +277,7 @@ function SlotCard({
   isCenter = false,
   onClick,
   totalSlides,
+  slideIndex,
 }: {
   slide: { id: number | string; image: string; ctaText: string; ctaLink: string };
   cardWidth: number;
@@ -275,6 +287,7 @@ function SlotCard({
   isCenter?: boolean;
   onClick?: () => void;
   totalSlides: number;
+  slideIndex?: number;
 }) {
   // Compute continuous scale based on relative distance from center
   const scale = useTransform(
@@ -329,6 +342,7 @@ function SlotCard({
         slide={slide}
         isInteractive={isCenter}
         totalSlides={totalSlides}
+        slideIndex={slideIndex}
       />
     </motion.div>
   );

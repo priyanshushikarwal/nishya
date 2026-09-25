@@ -89,6 +89,24 @@ export async function getHeroCampaigns(): Promise<HeroCampaign[]> {
     return heroCampaignsCache.data;
   }
 
+  // 1. Try server API route first (authoritative database data)
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/admin/hero");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.campaigns) && data.campaigns.length > 0) {
+          heroCampaignsCache = {
+            data: data.campaigns as HeroCampaign[],
+            expiresAt: Date.now() + CMS_CACHE_TTL,
+          };
+          return data.campaigns as HeroCampaign[];
+        }
+      }
+    } catch {}
+  }
+
+  // 2. Direct Supabase read
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -104,22 +122,6 @@ export async function getHeroCampaigns(): Promise<HeroCampaign[]> {
         };
         return data as HeroCampaign[];
       }
-    } catch {
-      // Fallback to local storage/defaults
-    }
-  }
-
-  if (typeof window !== "undefined") {
-    try {
-      const cached = localStorage.getItem(CMS_HERO_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        heroCampaignsCache = {
-          data: parsed,
-          expiresAt: Date.now() + CMS_CACHE_TTL,
-        };
-        return parsed;
-      }
     } catch {}
   }
 
@@ -132,73 +134,69 @@ export async function getHeroCampaigns(): Promise<HeroCampaign[]> {
 
 export async function saveHeroCampaign(campaign: HeroCampaign): Promise<boolean> {
   invalidateCmsCache();
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("hero_campaigns")
-        .upsert(campaign as any);
-      if (!error) return true;
-    } catch {}
+
+  try {
+    const res = await fetch("/api/admin/hero", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(campaign),
+    });
+
+    if (res.ok) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("nishya_cms_updated"));
+      }
+      return true;
+    }
+  } catch (err) {
+    console.error("Failed to save hero campaign to server database:", err);
   }
 
-  if (typeof window !== "undefined") {
-    const list = await getHeroCampaigns();
-    const existingIndex = list.findIndex((c) => c.id === campaign.id);
-    let updated: HeroCampaign[];
-    if (existingIndex >= 0) {
-      updated = [...list];
-      updated[existingIndex] = campaign;
-    } else {
-      updated = [...list, campaign];
-    }
-    localStorage.setItem(CMS_HERO_KEY, JSON.stringify(updated));
-  }
-  return true;
+  return false;
 }
 
 export async function saveHeroCampaignsOrder(campaigns: HeroCampaign[]): Promise<boolean> {
   invalidateCmsCache();
-  const reordered = campaigns.map((c, index) => ({
-    ...c,
-    sort_order: index + 1,
-  }));
 
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = createClient();
-      for (const item of reordered) {
-        await supabase
-          .from("hero_campaigns")
-          .update({ sort_order: item.sort_order })
-          .eq("id", item.id);
+  try {
+    const res = await fetch("/api/admin/hero", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ campaigns }),
+    });
+
+    if (res.ok) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("nishya_cms_updated"));
       }
       return true;
-    } catch {}
+    }
+  } catch (err) {
+    console.error("Failed to reorder hero campaigns on server:", err);
   }
 
-  if (typeof window !== "undefined") {
-    localStorage.setItem(CMS_HERO_KEY, JSON.stringify(reordered));
-  }
-  return true;
+  return false;
 }
 
 export async function deleteHeroCampaign(id: string): Promise<boolean> {
   invalidateCmsCache();
-  if (isSupabaseConfigured()) {
-    try {
-      const supabase = createClient();
-      await supabase.from("hero_campaigns").delete().eq("id", id);
+
+  try {
+    const res = await fetch(`/api/admin/hero?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("nishya_cms_updated"));
+      }
       return true;
-    } catch {}
+    }
+  } catch (err) {
+    console.error("Failed to delete hero campaign from server:", err);
   }
 
-  if (typeof window !== "undefined") {
-    const list = await getHeroCampaigns();
-    const filtered = list.filter((c) => c.id !== id);
-    localStorage.setItem(CMS_HERO_KEY, JSON.stringify(filtered));
-  }
-  return true;
+  return false;
 }
 
 // ==============================================================================
