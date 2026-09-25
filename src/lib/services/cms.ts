@@ -37,6 +37,7 @@ export interface AdminOrder {
   order_status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled";
   created_at: string;
   items_count: number;
+  shipping_address?: any;
 }
 
 // Local mock initial state if Supabase not yet connected
@@ -343,6 +344,7 @@ export async function getAdminOrders(): Promise<AdminOrder[]> {
           order_status: o.order_status,
           created_at: o.created_at,
           items_count: 1,
+          shipping_address: o.shipping_address,
         }));
       }
     } catch {}
@@ -358,18 +360,66 @@ export async function getAdminOrders(): Promise<AdminOrder[]> {
   return defaultOrders;
 }
 
-export async function updateOrderStatus(orderId: string, status: AdminOrder["order_status"]): Promise<boolean> {
+export async function updateOrderStatus(
+  orderId: string,
+  status: AdminOrder["order_status"],
+  tracking?: { courier?: string; trackingNumber?: string; trackingUrl?: string }
+): Promise<boolean> {
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
-      await supabase.from("orders").update({ order_status: status }).eq("id", orderId);
+      const updates: any = { order_status: status };
+
+      if (tracking) {
+        const { data: order } = await supabase
+          .from("orders")
+          .select("shipping_address")
+          .eq("id", orderId)
+          .single();
+
+        let currentAddr = order?.shipping_address;
+        if (typeof currentAddr === "string") {
+          try {
+            currentAddr = JSON.parse(currentAddr);
+          } catch {}
+        }
+        currentAddr = currentAddr || {};
+
+        updates.shipping_address = {
+          ...currentAddr,
+          courier: tracking.courier || currentAddr.courier || "",
+          trackingNumber: tracking.trackingNumber || currentAddr.trackingNumber || "",
+          trackingUrl: tracking.trackingUrl || currentAddr.trackingUrl || "",
+        };
+      }
+
+      await supabase.from("orders").update(updates).eq("id", orderId);
       return true;
-    } catch {}
+    } catch (err) {
+      console.warn("Could not update order status in Supabase:", err);
+    }
   }
 
   if (typeof window !== "undefined") {
     const list = await getAdminOrders();
-    const updated = list.map((o) => (o.id === orderId ? { ...o, order_status: status } : o));
+    const updated = list.map((o) => {
+      if (o.id === orderId) {
+        const currentAddr = typeof o.shipping_address === "string" ? JSON.parse(o.shipping_address) : (o.shipping_address || {});
+        return {
+          ...o,
+          order_status: status,
+          shipping_address: tracking
+            ? {
+                ...currentAddr,
+                courier: tracking.courier || currentAddr.courier,
+                trackingNumber: tracking.trackingNumber || currentAddr.trackingNumber,
+                trackingUrl: tracking.trackingUrl || currentAddr.trackingUrl,
+              }
+            : o.shipping_address,
+        };
+      }
+      return o;
+    });
     localStorage.setItem(CMS_ORDERS_KEY, JSON.stringify(updated));
   }
   return true;

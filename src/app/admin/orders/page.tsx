@@ -41,6 +41,67 @@ export default function AdminOrdersPage() {
   // Selected order for detailed slide-over
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
 
+  // Tracking details state
+  const [courier, setCourier] = useState("");
+  const [trackingNumber, setTrackingNumber] = useState("");
+  const [trackingUrl, setTrackingUrl] = useState("");
+  const [isSavingTracking, setIsSavingTracking] = useState(false);
+  const [trackingSavedMsg, setTrackingSavedMsg] = useState(false);
+
+  useEffect(() => {
+    if (selectedOrder) {
+      const addr = typeof selectedOrder.shipping_address === "string"
+        ? JSON.parse(selectedOrder.shipping_address)
+        : (selectedOrder.shipping_address || {});
+      setCourier(addr.courier || "");
+      setTrackingNumber(addr.trackingNumber || "");
+      setTrackingUrl(addr.trackingUrl || "");
+      setTrackingSavedMsg(false);
+    }
+  }, [selectedOrder]);
+
+  const handleSaveTracking = async () => {
+    if (!selectedOrder) return;
+    setIsSavingTracking(true);
+    await updateOrderStatus(selectedOrder.id, selectedOrder.order_status, {
+      courier,
+      trackingNumber,
+      trackingUrl,
+    });
+    setOrders((prev) =>
+      prev.map((o) => {
+        if (o.id === selectedOrder.id) {
+          const currentAddr = typeof o.shipping_address === "string" ? JSON.parse(o.shipping_address) : (o.shipping_address || {});
+          return {
+            ...o,
+            shipping_address: {
+              ...currentAddr,
+              courier,
+              trackingNumber,
+              trackingUrl,
+            },
+          };
+        }
+        return o;
+      })
+    );
+    if (selectedOrder) {
+      const currentAddr = typeof selectedOrder.shipping_address === "string" ? JSON.parse(selectedOrder.shipping_address) : (selectedOrder.shipping_address || {});
+      setSelectedOrder({
+        ...selectedOrder,
+        shipping_address: {
+          ...currentAddr,
+          courier,
+          trackingNumber,
+          trackingUrl,
+        },
+      });
+    }
+    setIsSavingTracking(false);
+    setTrackingSavedMsg(true);
+    setTimeout(() => setTrackingSavedMsg(false), 4000);
+  };
+
   useEffect(() => {
     async function load() {
       try {
@@ -389,8 +450,105 @@ export default function AdminOrdersPage() {
                   </div>
                   <div>
                     <span className="text-luxury-muted block text-[10px] uppercase">Shipping Address</span>
-                    <span>74 Taj Mansions, Colaba, Mumbai 400005, India</span>
+                    <span>
+                      {(() => {
+                        const addr =
+                          typeof selectedOrder.shipping_address === "string"
+                            ? JSON.parse(selectedOrder.shipping_address)
+                            : selectedOrder.shipping_address;
+                        return addr && addr.address
+                          ? `${addr.address}, ${addr.city || ""} ${addr.state || ""} - ${addr.postalCode || ""}`
+                          : "Artisan Atelier Pickup / Standard Consignment";
+                      })()}
+                    </span>
                   </div>
+                </div>
+              </div>
+
+              {/* Consignment & Parcel Tracking Management */}
+              <div className="p-4 rounded-xl bg-indigo-50/70 border border-indigo-200/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-indigo-700" />
+                    <span className="font-semibold text-indigo-950 uppercase tracking-wider text-[11px]">
+                      Courier Dispatch &amp; Tracking Link
+                    </span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-200/70 text-indigo-900 font-bold uppercase tracking-wider">
+                    Client Portal Sync
+                  </span>
+                </div>
+                <p className="text-[11px] text-indigo-800 leading-relaxed">
+                  Enter consignment details below. The client will instantly see the tracking link and courier details upon logging into their account.
+                </p>
+
+                <div className="space-y-2.5 pt-1">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-indigo-900 block mb-1">
+                      Courier Partner
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Blue Dart, Delhivery, DTDC, Shiprocket, FedEx"
+                      value={courier}
+                      onChange={(e) => setCourier(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs text-luxury-charcoal focus:outline-none focus:border-indigo-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-indigo-900 block mb-1">
+                      Tracking / AWB Number
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. BD-84920194"
+                      value={trackingNumber}
+                      onChange={(e) => setTrackingNumber(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs text-luxury-charcoal font-mono focus:outline-none focus:border-indigo-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-indigo-900 block mb-1">
+                      Live Courier Tracking URL
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://www.delhivery.com/track/package/..."
+                      value={trackingUrl}
+                      onChange={(e) => setTrackingUrl(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs text-luxury-charcoal focus:outline-none focus:border-indigo-600"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      disabled={isSavingTracking}
+                      onClick={handleSaveTracking}
+                      className="px-4 py-2 rounded-lg bg-indigo-900 hover:bg-indigo-950 text-white text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      {isSavingTracking ? "Updating..." : "Save Tracking Info"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSavingTracking}
+                      onClick={() => {
+                        handleStatusChange(selectedOrder.id, "shipped");
+                        handleSaveTracking();
+                      }}
+                      className="px-3 py-2 rounded-lg border border-indigo-300 hover:bg-white text-indigo-900 text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      Mark as Shipped &amp; Save
+                    </button>
+                  </div>
+
+                  {trackingSavedMsg && (
+                    <p className="text-[11px] text-emerald-800 font-semibold animate-in fade-in">
+                      ✓ Tracking details updated! Client can now track this parcel live in their account.
+                    </p>
+                  )}
                 </div>
               </div>
 

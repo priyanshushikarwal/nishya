@@ -3,7 +3,8 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { X, ArrowRight, Phone, Mail, Sparkles } from "lucide-react";
+import { X, ArrowRight, Phone, Mail, Sparkles, Package, LogOut, LogIn, UserPlus } from "lucide-react";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+  const { user, profile, isAuthenticated, signOut } = useCustomerAuth();
+
   // Prevent background scrolling while mobile menu is open
   useEffect(() => {
     if (isOpen) {
@@ -60,7 +63,74 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             </button>
           </div>
 
-          {/* Navigation Links with generous touch height */}
+          {/* Client Account Section */}
+          <div className="p-3.5 rounded-2xl bg-luxury-soft border border-luxury-border">
+            {isAuthenticated ? (
+              <div className="space-y-3">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-luxury-gold block">
+                    Signed In As
+                  </span>
+                  <div className="font-serif text-sm font-bold text-luxury-charcoal truncate">
+                    {profile?.full_name || "Nishya Patron"}
+                  </div>
+                  <div className="text-[11px] text-luxury-muted truncate">
+                    {user?.email}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1 border-t border-luxury-border/60">
+                  <Link
+                    href="/orders"
+                    onClick={onClose}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-luxury-charcoal text-white text-xs font-semibold hover:bg-luxury-dark transition-colors"
+                  >
+                    <Package className="w-3.5 h-3.5 text-luxury-gold" />
+                    <span>My Orders</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      onClose();
+                      signOut();
+                    }}
+                    className="flex items-center justify-center p-2 rounded-xl border border-luxury-border hover:bg-red-50 text-red-600 transition-colors"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-luxury-gold block">
+                  Nishya Privé Client
+                </span>
+                <p className="text-xs text-luxury-muted leading-tight">
+                  Sign in to track orders or create your account for checkout.
+                </p>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <Link
+                    href="/login"
+                    onClick={onClose}
+                    className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-luxury-charcoal text-white text-xs font-semibold hover:bg-luxury-dark transition-colors"
+                  >
+                    <LogIn className="w-3.5 h-3.5 text-luxury-gold" />
+                    <span>Sign In</span>
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={onClose}
+                    className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white border border-luxury-border text-luxury-charcoal text-xs font-semibold hover:bg-luxury-soft transition-colors"
+                  >
+                    <UserPlus className="w-3.5 h-3.5 text-luxury-gold" />
+                    <span>Register</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Navigation Links */}
           <nav className="space-y-1 divide-y divide-luxury-border/50">
             <div className="py-2 space-y-1">
               <Link
@@ -79,7 +149,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 <div className="flex items-center gap-2">
                   <span>Shop All Pieces</span>
                   <span className="text-[10px] bg-luxury-gold text-white px-2 py-0.5 rounded-full font-sans uppercase tracking-wider font-bold">
-                    12 Items
+                    Capsule
                   </span>
                 </div>
                 <ArrowRight className="w-4 h-4 text-luxury-muted" />
@@ -108,24 +178,19 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 <span>Everyday Totes</span>
                 <ArrowRight className="w-4 h-4 text-luxury-muted" />
               </Link>
-              <Link
-                href="/products?category=Wallets"
-                onClick={onClose}
-                className="flex items-center justify-between py-2.5 px-3 rounded-xl text-base font-serif font-semibold text-luxury-charcoal hover:bg-luxury-soft hover:text-luxury-gold transition-colors"
-              >
-                <span>Wallets & SLGs</span>
-                <ArrowRight className="w-4 h-4 text-luxury-muted" />
-              </Link>
             </div>
 
             <div className="py-3 space-y-1">
               <Link
-                href="/products"
+                href="/orders"
                 onClick={onClose}
-                className="flex items-center gap-2.5 py-2 px-3 text-sm text-luxury-charcoal hover:text-luxury-gold font-medium"
+                className="flex items-center justify-between py-2 px-3 text-sm text-luxury-charcoal hover:text-luxury-gold font-medium"
               >
-                <Sparkles className="w-3.5 h-3.5 text-luxury-gold" />
-                <span>New Arrivals Capsule</span>
+                <div className="flex items-center gap-2.5">
+                  <Package className="w-4 h-4 text-luxury-gold" />
+                  <span>Track My Orders</span>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-luxury-muted" />
               </Link>
               <Link
                 href="/cart"

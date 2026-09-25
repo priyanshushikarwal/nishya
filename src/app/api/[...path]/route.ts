@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Fallback to the live Hostinger VPS Go Backend if GO_BACKEND_URL is not set in environment
+// Backend URL (configurable via env GO_BACKEND_URL)
 const GO_BACKEND_URL =
-  process.env.GO_BACKEND_URL || "http://72.61.245.231.sslip.io:8080";
+  process.env.GO_BACKEND_URL || "http://127.0.0.1:8080";
 
 export const dynamic = "force-dynamic";
 

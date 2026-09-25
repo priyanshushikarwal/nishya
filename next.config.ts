@@ -42,8 +42,8 @@ const securityHeaders = [
   },
 ];
 
-// Go backend URL (configurable via env, defaults to live Hostinger VPS Go API)
-const goBackendURL = process.env.GO_BACKEND_URL || "http://72.61.245.231:8080";
+// Go backend URL (configurable via env GO_BACKEND_URL)
+const goBackendURL = process.env.GO_BACKEND_URL || "http://127.0.0.1:8080";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -60,12 +60,21 @@ const nextConfig: NextConfig = {
     "127.0.0.1",
   ],
   images: {
+    unoptimized: true,
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86400, // 24-hour edge & browser cache (protects Vercel 1,000 monthly image quota)
     remotePatterns: [
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "wbrxwsenrilaxjgdeish.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
       },
       {
         protocol: "https",

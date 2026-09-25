@@ -21,11 +21,23 @@ func SettingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var allowedPublicSettings = map[string]bool{
+	"brand":        true,
+	"announcement": true,
+	"shipping":     true,
+	"seo":          true,
+}
+
 func handleGetSettings(w http.ResponseWriter, r *http.Request) {
 	// Optional: get a specific key
-	key := r.URL.Query().Get("key")
+	key := strings.TrimSpace(r.URL.Query().Get("key"))
 
 	if key != "" {
+		if !allowedPublicSettings[key] {
+			writeError(w, http.StatusForbidden, "Access to requested configuration is restricted.")
+			return
+		}
+
 		var setting models.StoreSetting
 		err := db.Pool.QueryRowContext(r.Context(), `
 			SELECT key, value, updated_at FROM public.store_settings WHERE key = $1
@@ -39,9 +51,12 @@ func handleGetSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return all settings
+	// Return public settings only
 	rows, err := db.Pool.QueryContext(r.Context(), `
-		SELECT key, value, updated_at FROM public.store_settings ORDER BY key
+		SELECT key, value, updated_at
+		FROM public.store_settings
+		WHERE key IN ('brand', 'announcement', 'shipping', 'seo')
+		ORDER BY key
 	`)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "Failed to fetch settings")

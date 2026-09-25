@@ -9,7 +9,7 @@ export const createAdminClient = () => {
     return null;
   }
 
-  return createSupabaseClient<Database>(supabaseUrl, supabaseServiceKey, {
+  return createSupabaseClient<any>(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

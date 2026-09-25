@@ -316,6 +316,10 @@ export function ProductEditorForm({ initialProduct }: ProductEditorFormProps) {
                   <option value="Clutches">Clutches</option>
                   <option value="Mini Bags">Mini Bags</option>
                   <option value="Wallets">Wallets</option>
+                  <option value="Backpacks">Backpacks</option>
+                  <option value="Sling Bags">Sling Bags</option>
+                  <option value="Hats & Headwear">Hats & Headwear</option>
+                  <option value="Yoga & Gym Bags">Yoga & Gym Bags</option>
                   <option value="Artisan Storage">Artisan Storage</option>
                 </select>
               </div>

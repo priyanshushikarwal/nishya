@@ -374,6 +374,16 @@ func VerifyRazorpayPaymentHandler(keyID, keySecret string) http.HandlerFunc {
 			return
 		}
 
+		// 5. Decrement inventory for confirmed items
+		db.Pool.ExecContext(r.Context(), `
+			UPDATE public.products p
+			SET stock_quantity = GREATEST(0, p.stock_quantity - oi.quantity),
+			    in_stock = (p.stock_quantity - oi.quantity > 0),
+			    updated_at = NOW()
+			FROM public.order_items oi
+			WHERE oi.order_id = $1 AND p.id = oi.product_id
+		`, req.OrderID)
+
 		log.Printf("✅ [PAYMENT CONFIRMED] Order %s successfully verified for ₹%.2f via payment %s",
 			req.OrderID, orderTotal, req.RazorpayPaymentID)
 
@@ -495,6 +505,17 @@ func RazorpayWebhookHandler(webhookSecret, keyID, keySecret string) http.Handler
 						    updated_at = NOW()
 						WHERE id = $1
 					`, nishyaOrderID)
+
+					// Decrement inventory for confirmed items
+					db.Pool.ExecContext(r.Context(), `
+						UPDATE public.products p
+						SET stock_quantity = GREATEST(0, p.stock_quantity - oi.quantity),
+						    in_stock = (p.stock_quantity - oi.quantity > 0),
+						    updated_at = NOW()
+						FROM public.order_items oi
+						WHERE oi.order_id = $1 AND p.id = oi.product_id
+					`, nishyaOrderID)
+
 					log.Printf("✅ [WEBHOOK CONFIRMED] Order %s marked paid via webhook", nishyaOrderID)
 				}
 			}

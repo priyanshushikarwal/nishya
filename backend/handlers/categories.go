@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
@@ -93,7 +94,8 @@ func handleUpsertCategory(w http.ResponseWriter, r *http.Request) {
 		`, cat.Name, cat.Slug, cat.Description, cat.Image, cat.SortOrder, isVisible, cat.ID)
 
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, "Failed to update category: "+err.Error())
+			log.Printf("❌ Failed to update category: %v", err)
+			writeError(w, http.StatusInternalServerError, "Failed to update category. Please try again.")
 			return
 		}
 	} else {
@@ -106,7 +108,8 @@ func handleUpsertCategory(w http.ResponseWriter, r *http.Request) {
 		`, cat.Name, cat.Slug, cat.Description, cat.Image, cat.SortOrder, isVisible).Scan(&newID)
 
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, "Failed to create category: "+err.Error())
+			log.Printf("❌ Failed to create category: %v", err)
+			writeError(w, http.StatusInternalServerError, "Failed to create category. Please check slug uniqueness.")
 			return
 		}
 		cat.ID = newID

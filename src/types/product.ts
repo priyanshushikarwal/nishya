@@ -8,7 +8,20 @@ export interface Product {
   image: string;
   secondaryImage?: string;
   gallery?: string[];
-  category: "Laptop Bags" | "Artisan Storage" | "Handbags" | "Shoulder Bags" | "Clutches" | "Totes" | "Mini Bags" | "Wallets";
+  category:
+    | "Laptop Bags"
+    | "Artisan Storage"
+    | "Handbags"
+    | "Shoulder Bags"
+    | "Clutches"
+    | "Totes"
+    | "Mini Bags"
+    | "Wallets"
+    | "Backpacks"
+    | "Sling Bags"
+    | "Hats & Headwear"
+    | "Yoga & Gym Bags"
+    | string;
   badge?: string;
   description: string;
   details?: string[];

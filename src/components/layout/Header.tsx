@@ -1,17 +1,35 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingBag, User, Menu, Heart } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, Heart, Package, LogOut, LogIn, UserPlus } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { SearchModal } from "@/components/cart/SearchModal";
 import { MobileMenu } from "@/components/layout/MobileMenu";
 
 export function Header() {
   const { totalItems, openCart } = useCart();
+  const { user, profile, isAuthenticated, signOut } = useCustomerAuth();
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -21,7 +39,7 @@ export function Header() {
           {/* MOBILE NAVBAR (< md): ☰ SEARCH | NISHYA | ♡ 🛍 👤        */}
           {/* ========================================================= */}
           <div className="flex md:hidden w-full items-center justify-between">
-            {/* Left: Hamburger & Search (Thin line icons, no boxes) */}
+            {/* Left: Hamburger & Search */}
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setIsMenuOpen(true)}
@@ -53,7 +71,7 @@ export function Header() {
               </Link>
             </div>
 
-            {/* Right: Wishlist, Shopping Bag, Account (Thin line icons, no boxes) */}
+            {/* Right: Wishlist, Shopping Bag, Account */}
             <div className="flex items-center gap-0.5">
               <Link
                 href="/products"
@@ -77,9 +95,12 @@ export function Header() {
               </button>
 
               <Link
-                href="/products"
-                className="w-10 h-10 flex items-center justify-center text-luxury-charcoal hover:text-luxury-gold transition-colors"
-                aria-label="Account"
+                href={isAuthenticated ? "/orders" : "/login"}
+                className={`w-10 h-10 flex items-center justify-center transition-colors ${
+                  isAuthenticated ? "text-luxury-gold" : "text-luxury-charcoal hover:text-luxury-gold"
+                }`}
+                aria-label={isAuthenticated ? "My Orders" : "Sign In"}
+                title={isAuthenticated ? "My Orders" : "Sign In"}
               >
                 <User className="w-5 h-5 stroke-[1.5]" />
               </Link>
@@ -87,7 +108,7 @@ export function Header() {
           </div>
 
           {/* ========================================================= */}
-          {/* DESKTOP NAVBAR (>= md): PRESERVED ORIGINAL STRUCTURE      */}
+          {/* DESKTOP NAVBAR (>= md)                                   */}
           {/* ========================================================= */}
           <div className="hidden md:flex w-full items-center justify-between">
             {/* Desktop Left: Menu toggle & Brand */}
@@ -150,15 +171,93 @@ export function Header() {
                 <Search className="w-4 h-4" />
               </button>
 
-              <Link
-                href="/products"
-                className="w-10 h-10 rounded-full hover:bg-luxury-soft flex items-center justify-center text-luxury-charcoal hover:text-luxury-gold transition-colors shrink-0"
-                aria-label="Account / Concierge"
-                title="Luxury Concierge"
-              >
-                <User className="w-4 h-4" />
-              </Link>
+              {/* User Account Menu with Luxury Dropdown */}
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                    isAuthenticated
+                      ? "bg-luxury-gold/10 text-luxury-gold border border-luxury-gold/30 hover:bg-luxury-gold/20"
+                      : "hover:bg-luxury-soft text-luxury-charcoal hover:text-luxury-gold"
+                  }`}
+                  aria-label="Client Account"
+                  title={isAuthenticated ? `Client: ${profile?.full_name || user?.email}` : "Client Portal"}
+                >
+                  <User className="w-4 h-4" />
+                </button>
 
+                {/* Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-luxury-border shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+                    {isAuthenticated ? (
+                      <div className="space-y-1">
+                        <div className="px-3 py-2.5 border-b border-luxury-border/60">
+                          <span className="text-[10px] uppercase tracking-wider font-semibold text-luxury-gold block">
+                            Privé Client
+                          </span>
+                          <p className="text-xs font-serif font-bold text-luxury-charcoal truncate">
+                            {profile?.full_name || "Nishya Patron"}
+                          </p>
+                          <p className="text-[11px] text-luxury-muted truncate">
+                            {user?.email}
+                          </p>
+                        </div>
+
+                        <Link
+                          href="/orders"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-luxury-charcoal hover:bg-luxury-soft hover:text-luxury-gold transition-colors"
+                        >
+                          <Package className="w-4 h-4 text-luxury-gold" />
+                          <span>My Orders & Tracking</span>
+                        </Link>
+
+                        <button
+                          onClick={() => {
+                            setIsUserMenuOpen(false);
+                            signOut();
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <div className="px-3 py-2 border-b border-luxury-border/60">
+                          <span className="text-[10px] uppercase tracking-wider font-semibold text-luxury-gold block">
+                            Nishya Privé
+                          </span>
+                          <p className="text-xs text-luxury-muted">
+                            Sign in to track bespoke orders and manage your collection.
+                          </p>
+                        </div>
+
+                        <Link
+                          href="/login"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-luxury-charcoal hover:bg-luxury-soft hover:text-luxury-gold transition-colors"
+                        >
+                          <LogIn className="w-4 h-4 text-luxury-gold" />
+                          <span>Sign In</span>
+                        </Link>
+
+                        <Link
+                          href="/signup"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-luxury-charcoal hover:bg-luxury-soft hover:text-luxury-gold transition-colors"
+                        >
+                          <UserPlus className="w-4 h-4 text-luxury-gold" />
+                          <span>Create Account</span>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Shopping Bag Button */}
               <button
                 onClick={openCart}
                 className="relative w-10 h-10 rounded-full bg-luxury-soft hover:bg-luxury-charcoal hover:text-white flex items-center justify-center text-luxury-charcoal transition-all duration-200 cursor-pointer shrink-0"

@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
@@ -40,10 +41,11 @@ func handleGetReviews(w http.ResponseWriter, r *http.Request) {
 			ORDER BY created_at DESC
 		`, productID)
 	} else {
-		// Admin: get all reviews
+		// Public general request: only show approved reviews to prevent leakage of rejected/pending reviews
 		rows, err = db.Pool.QueryContext(r.Context(), `
 			SELECT id, product_id, author_name, rating, review_title, review_text, status, created_at
 			FROM public.reviews
+			WHERE status = 'approved'
 			ORDER BY created_at DESC
 		`)
 	}
@@ -115,7 +117,8 @@ func handleSubmitReview(w http.ResponseWriter, r *http.Request) {
 	`, req.ProductID, req.AuthorName, req.Rating, reviewTitle, req.ReviewText).Scan(&reviewID)
 
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "Failed to submit review: "+err.Error())
+		log.Printf("❌ Failed to submit review: %v", err)
+		writeError(w, http.StatusInternalServerError, "Failed to submit review. Please try again.")
 		return
 	}
 

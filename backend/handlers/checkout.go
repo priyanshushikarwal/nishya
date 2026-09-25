@@ -1,12 +1,13 @@
 package handlers
 
 import (
+	"crypto/rand"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/nishya/backend/db"
 	"github.com/nishya/backend/models"
@@ -196,13 +197,15 @@ func CheckoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	grandTotal := verifiedSubtotal + shippingFee
 
-	// 5. Generate unique order ID
-	// Use a random suffix for the order ID
-	randomSuffix := int(math.Mod(float64(hashCode(fmt.Sprintf("%s-%d", email, len(verifiedItems)))), 900000)) + 100000
-	if randomSuffix < 0 {
-		randomSuffix = -randomSuffix
+	// 5. Generate unique, cryptographically secure order ID
+	// Prevents order enumeration and primary key collisions
+	orderSuffixBytes := make([]byte, 4)
+	var orderID string
+	if _, err := rand.Read(orderSuffixBytes); err == nil {
+		orderID = fmt.Sprintf("NIS-2026-%X", orderSuffixBytes)
+	} else {
+		orderID = fmt.Sprintf("NIS-2026-%d", time.Now().UnixNano()%900000+100000)
 	}
-	orderID := fmt.Sprintf("NIS-2026-%d", randomSuffix)
 
 	// 6. Build shipping address JSON
 	shippingAddr, _ := json.Marshal(map[string]string{
@@ -278,15 +281,21 @@ func CheckoutHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 9. Decrement inventory
-	for _, item := range verifiedItems {
-		db.Pool.ExecContext(r.Context(), `
-			UPDATE public.products
-			SET stock_quantity = GREATEST(0, stock_quantity - $1),
-			    in_stock = (stock_quantity - $1 > 0),
-			    updated_at = NOW()
-			WHERE id = $2 AND stock_quantity >= $1
-		`, item.Quantity, item.ProductID)
+	// 9. Decrement inventory ONLY for confirmed orders (e.g. COD)
+	// SECURITY: For online payment orders (card / upi), do NOT decrement inventory
+	// until payment is cryptographically verified (in VerifyRazorpayPaymentHandler / Webhook).
+	// This prevents "Inventory Exhaustion / Denial of Inventory" attacks where
+	// an attacker creates fake pending orders to wipe out stock without paying.
+	if isCOD {
+		for _, item := range verifiedItems {
+			db.Pool.ExecContext(r.Context(), `
+				UPDATE public.products
+				SET stock_quantity = GREATEST(0, stock_quantity - $1),
+				    in_stock = (stock_quantity - $1 > 0),
+				    updated_at = NOW()
+				WHERE id = $2 AND stock_quantity >= $1
+			`, item.Quantity, item.ProductID)
+		}
 	}
 
 	writeJSON(w, http.StatusOK, models.CheckoutResponse{

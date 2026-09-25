@@ -5,12 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { Plus, Minus, Trash2, ArrowRight, ShoppingBag, ShieldCheck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { formatPrice } from "@/lib/utils";
 import { CanvasWrapper } from "@/components/layout/CanvasWrapper";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
 export default function CartPage() {
+  const { isAuthenticated } = useCustomerAuth();
   const {
     items,
     updateQuantity,
@@ -23,22 +25,53 @@ export default function CartPage() {
   } = useCart();
 
   const [promoCode, setPromoCode] = useState("");
-  const [discountApplied, setDiscountApplied] = useState(false);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [discountAppliedMsg, setDiscountAppliedMsg] = useState("");
   const [promoError, setPromoError] = useState("");
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
 
-  const handleApplyPromo = (e: React.FormEvent) => {
+  const handleApplyPromo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (promoCode.trim().toUpperCase() === "LUXE50" || promoCode.trim().toUpperCase() === "NISHYA" || promoCode.trim().toUpperCase() === "PURSIA") {
-      setDiscountApplied(true);
-      setPromoError("");
-    } else {
-      setPromoError("Invalid code. Try LUXE50 for promotional preview.");
+    setPromoError("");
+    setDiscountAppliedMsg("");
+
+    const cleanCode = promoCode.trim().toUpperCase();
+    if (!cleanCode) {
+      setPromoError("Please enter a promotional code.");
+      return;
+    }
+
+    setIsValidatingPromo(true);
+    try {
+      const res = await fetch("/api/coupon/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: cleanCode,
+          items: items.map((i) => ({ id: i.product.id, quantity: i.quantity })),
+          subtotal,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        setPromoError(data.error || "The promotional code entered is invalid or expired.");
+        setDiscountAmount(0);
+        setDiscountAppliedMsg("");
+      } else {
+        setDiscountAmount(data.discountAmount);
+        setDiscountAppliedMsg(`✓ Code ${data.code} applied: ${data.description}`);
+        setPromoError("");
+      }
+    } catch {
+      setPromoError("Could not validate promotional code. Please try again.");
+    } finally {
+      setIsValidatingPromo(false);
     }
   };
 
-  const promoDiscount = discountApplied ? Math.round(subtotal * 0.1) : 0;
   const shippingFee = isFreeShipping ? 0 : 250;
-  const grandTotal = Math.max(0, subtotal - promoDiscount + shippingFee);
+  const grandTotal = Math.max(0, subtotal - discountAmount + shippingFee);
 
   return (
     <CanvasWrapper>
@@ -216,21 +249,22 @@ export default function CartPage() {
                   <div className="flex rounded-full overflow-hidden border border-luxury-border bg-white focus-within:border-luxury-gold">
                     <input
                       type="text"
-                      placeholder="Try LUXE50"
+                      placeholder="Enter Privilege Code"
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value)}
                       className="w-full px-4 py-2.5 text-xs uppercase text-luxury-charcoal placeholder:text-luxury-muted/60 focus:outline-none min-h-[44px]"
                     />
                     <button
                       type="submit"
-                      className="px-4 bg-luxury-charcoal hover:bg-luxury-dark text-white text-xs uppercase tracking-wider font-semibold transition-colors cursor-pointer shrink-0 min-h-[44px]"
+                      disabled={isValidatingPromo}
+                      className="px-4 bg-luxury-charcoal hover:bg-luxury-dark text-white text-xs uppercase tracking-wider font-semibold transition-colors cursor-pointer shrink-0 min-h-[44px] disabled:opacity-50"
                     >
-                      Apply
+                      {isValidatingPromo ? "..." : "Apply"}
                     </button>
                   </div>
-                  {discountApplied && (
+                  {discountAppliedMsg && (
                     <p className="text-[11px] text-emerald-700 font-medium">
-                      ✓ VIP Code applied: 10% privilege discount
+                      {discountAppliedMsg}
                     </p>
                   )}
                   {promoError && <p className="text-[11px] text-red-600">{promoError}</p>}
@@ -242,10 +276,10 @@ export default function CartPage() {
                     <span>Subtotal</span>
                     <span className="font-bold text-luxury-charcoal">{formatPrice(subtotal)}</span>
                   </div>
-                  {discountApplied && (
-                    <div className="flex justify-between text-emerald-700">
-                      <span>Privilege Discount</span>
-                      <span>-{formatPrice(promoDiscount)}</span>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-emerald-700 font-medium">
+                      <span>Privilege Discount ({promoCode.trim().toUpperCase()})</span>
+                      <span>-{formatPrice(discountAmount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-luxury-muted">
@@ -265,12 +299,18 @@ export default function CartPage() {
                 </div>
 
                 <Link
-                  href="/checkout"
+                  href={isAuthenticated ? "/checkout" : "/login?redirect=/checkout"}
                   className="w-full flex items-center justify-center gap-2 py-4 rounded-full bg-luxury-charcoal hover:bg-luxury-dark text-white text-xs uppercase tracking-[0.2em] font-semibold transition-all shadow-lg shadow-luxury-charcoal/20 min-h-[48px]"
                 >
-                  <span>Proceed to Checkout</span>
+                  <span>{isAuthenticated ? "Proceed to Checkout" : "Sign In to Checkout"}</span>
                   <ArrowRight className="w-4 h-4 text-luxury-gold" />
                 </Link>
+
+                {!isAuthenticated && (
+                  <p className="text-[11px] text-center text-luxury-muted">
+                    Private client account required to place and track orders
+                  </p>
+                )}
 
                 <div className="text-center flex items-center justify-center gap-2 text-[11px] text-luxury-muted pt-1">
                   <ShieldCheck className="w-4 h-4 text-luxury-gold" />

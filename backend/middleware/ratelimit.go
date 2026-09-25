@@ -86,16 +86,33 @@ func RateLimit(limiter *RateLimiter, next http.Handler) http.Handler {
 	})
 }
 
-// getClientIP extracts the client IP from standard proxy headers.
+// getClientIP extracts the client IP, prioritizing trusted reverse proxy headers.
+// SECURITY: Prioritizes CF-Connecting-IP and X-Real-IP set by Cloudflare and Nginx
+// to prevent attackers from spoofing X-Forwarded-For to bypass rate limits.
 func getClientIP(r *http.Request) string {
+	// 1. Cloudflare connecting IP (trusted when behind Cloudflare)
+	if cfIP := strings.TrimSpace(r.Header.Get("CF-Connecting-IP")); cfIP != "" {
+		return cfIP
+	}
+
+	// 2. Nginx set X-Real-IP
+	if realIP := strings.TrimSpace(r.Header.Get("X-Real-IP")); realIP != "" {
+		return realIP
+	}
+
+	// 3. Fallback: X-Forwarded-For
 	if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
-		parts := strings.SplitN(forwarded, ",", 2)
-		return strings.TrimSpace(parts[0])
+		parts := strings.Split(forwarded, ",")
+		// Take the first entry
+		if len(parts) > 0 {
+			ip := strings.TrimSpace(parts[0])
+			if ip != "" {
+				return ip
+			}
+		}
 	}
-	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
-		return strings.TrimSpace(realIP)
-	}
-	// Fallback to RemoteAddr (includes port)
+
+	// 4. Fallback to direct TCP RemoteAddr (strip port)
 	addr := r.RemoteAddr
 	if idx := strings.LastIndex(addr, ":"); idx != -1 {
 		return addr[:idx]

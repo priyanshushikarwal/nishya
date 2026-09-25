@@ -57,18 +57,39 @@ func MediaUploadHandler(supabaseURL, serviceKey string) http.HandlerFunc {
 			return
 		}
 
-		// Validate MIME type
-		contentType := header.Header.Get("Content-Type")
-		if !allowedMimeTypes[contentType] {
-			writeError(w, http.StatusBadRequest, "Invalid file format. Only JPG, PNG, and WebP images are permitted.")
-			return
-		}
-
 		// Validate extension
 		ext := strings.ToLower(filepath.Ext(header.Filename))
 		if !allowedExtensions[ext] {
 			writeError(w, http.StatusBadRequest, "Invalid file extension. Only .jpg, .jpeg, .png, and .webp are allowed.")
 			return
+		}
+
+		// Read file contents
+		fileBytes, err := io.ReadAll(file)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "Failed to read uploaded file")
+			return
+		}
+
+		// SECURITY: Verify magic bytes directly from content (CWE-434: File Upload Content Spoofing)
+		sniffLen := 512
+		if len(fileBytes) < sniffLen {
+			sniffLen = len(fileBytes)
+		}
+		detectedType := http.DetectContentType(fileBytes[:sniffLen])
+
+		isWebP := len(fileBytes) >= 12 && string(fileBytes[:4]) == "RIFF" && string(fileBytes[8:12]) == "WEBP"
+		isValidImage := detectedType == "image/jpeg" || detectedType == "image/png" || isWebP
+
+		if !isValidImage {
+			writeError(w, http.StatusBadRequest, "File content is not a valid image format. Executable, script, or corrupted files are rejected.")
+			return
+		}
+
+		// Use verified MIME type
+		contentType := detectedType
+		if isWebP {
+			contentType = "image/webp"
 		}
 
 		// Get bucket from form field, default to product-media
@@ -86,13 +107,6 @@ func MediaUploadHandler(supabaseURL, serviceKey string) http.HandlerFunc {
 		}
 		fileName := fmt.Sprintf("%d_%s_%s%s",
 			time.Now().UnixMilli(), sanitized, randomString(6), ext)
-
-		// Read file contents
-		fileBytes, err := io.ReadAll(file)
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "Failed to read uploaded file")
-			return
-		}
 
 		// If Supabase is configured, upload via Storage REST API
 		if supabaseURL != "" && serviceKey != "" {

@@ -5,9 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { formatPrice } from "@/lib/utils";
 
 export function CartDrawer() {
+  const { isAuthenticated } = useCustomerAuth();
   const {
     items,
     isOpen,
@@ -214,13 +216,18 @@ export function CartDrawer() {
 
               <div className="space-y-2 pt-1">
                 <Link
-                  href="/checkout"
+                  href={isAuthenticated ? "/checkout" : "/login?redirect=/checkout"}
                   onClick={closeCart}
                   className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-full bg-luxury-charcoal hover:bg-luxury-dark text-white text-xs uppercase tracking-widest font-semibold transition-all shadow-md shadow-luxury-charcoal/20 cursor-pointer min-h-[48px]"
                 >
-                  <span>Proceed to Checkout</span>
+                  <span>{isAuthenticated ? "Proceed to Checkout" : "Sign In to Checkout"}</span>
                   <ArrowRight className="w-4 h-4 text-luxury-gold" />
                 </Link>
+                {!isAuthenticated && (
+                  <p className="text-[10px] text-center text-luxury-muted">
+                    Account required at checkout to track your orders
+                  </p>
+                )}
                 <Link
                   href="/cart"
                   onClick={closeCart}
