@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, X, ArrowRight } from "lucide-react";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/services/products";
+import { Product } from "@/types/product";
 import { formatPrice } from "@/lib/utils";
 
 interface SearchModalProps {
@@ -14,10 +15,12 @@ interface SearchModalProps {
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("");
+  const [productsList, setProductsList] = useState<Product[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      getProducts().then((all) => setProductsList(all));
     } else {
       document.body.style.overflow = "unset";
     }
@@ -34,13 +37,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   if (!isOpen) return null;
 
   const filtered = query.trim()
-    ? products.filter(
+    ? productsList.filter(
         (p) =>
           p.name.toLowerCase().includes(query.toLowerCase()) ||
           p.category.toLowerCase().includes(query.toLowerCase()) ||
           p.description.toLowerCase().includes(query.toLowerCase())
       )
-    : products.slice(0, 4);
+    : productsList.slice(0, 4);
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4">

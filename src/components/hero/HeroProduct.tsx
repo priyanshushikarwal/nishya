@@ -22,6 +22,8 @@ export function HeroProduct({
   onSelectIndex,
   totalIndices = 4,
 }: HeroProductProps) {
+  if (!product) return null;
+
   return (
     <div className="relative w-full flex flex-col items-center justify-center select-none pt-4 sm:pt-6 lg:pt-0">
       {/* Product Display Canvas */}

@@ -35,6 +35,8 @@ export function ProductDiscovery({ content }: ProductDiscoveryProps) {
     "Discover the finest bags that combine style, elegance and perfection.";
   const buttonText = content?.button_text || "Explore All Pieces";
 
+  if (items.length === 0) return null;
+
   return (
     <section className="relative px-4 sm:px-6 md:px-8 lg:px-14 py-12 sm:py-16 lg:py-24 overflow-x-clip">
       <div className="w-full max-w-[1360px] mx-auto space-y-8 sm:space-y-12 lg:space-y-16">

@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Play, ArrowRight, Sparkles } from "lucide-react";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/services/products";
+import { Product } from "@/types/product";
 import { HeroProduct } from "@/components/hero/HeroProduct";
 import { VideoModal } from "@/components/hero/VideoModal";
 import { MobileSwipeHero } from "@/components/hero/MobileSwipeHero";
@@ -11,8 +13,19 @@ import { MobileSwipeHero } from "@/components/hero/MobileSwipeHero";
 export function HeroSection() {
   const [heroIndex, setHeroIndex] = useState(0);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const [heroBags, setHeroBags] = useState<Product[]>([]);
 
-  const heroBags = products.slice(0, 4);
+  useEffect(() => {
+    const fetchBags = () => {
+      getProducts().then((all) => {
+        setHeroBags(all.slice(0, 4));
+      });
+    };
+    fetchBags();
+    window.addEventListener("nishya_products_updated", fetchBags);
+    return () => window.removeEventListener("nishya_products_updated", fetchBags);
+  }, []);
+
   const currentBag = heroBags[heroIndex] || heroBags[0];
 
   return (
@@ -98,12 +111,42 @@ export function HeroSection() {
 
         {/* 6. HERO PRODUCT SHOWCASE (Mobile: Below content, Desktop: Right 6 cols) */}
         <div className="lg:col-span-6 relative w-full flex justify-center">
-          <HeroProduct
-            product={currentBag}
-            currentIndex={heroIndex}
-            onSelectIndex={setHeroIndex}
-            totalIndices={heroBags.length}
-          />
+          {currentBag ? (
+            <HeroProduct
+              product={currentBag}
+              currentIndex={heroIndex}
+              onSelectIndex={setHeroIndex}
+              totalIndices={heroBags.length}
+            />
+          ) : (
+            <div className="relative w-full max-w-[480px] rounded-3xl bg-gradient-to-b from-[#FAF7F2] to-[#F2EDE4] p-8 border border-luxury-border shadow-xl flex flex-col items-center text-center space-y-5">
+              <div className="relative w-[300px] h-[300px] rounded-2xl overflow-hidden shadow-md">
+                <Image
+                  src="/images/nishya/carry_your_story_pink_arch.jpg"
+                  alt="Nishya Atelier Campaign"
+                  fill
+                  priority
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-5">
+                  <span className="text-white text-xs uppercase tracking-[0.2em] font-semibold">
+                    Atelier Collection 2026
+                  </span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <span className="text-[10px] uppercase tracking-[0.3em] font-semibold text-luxury-gold">
+                  Exclusive Release
+                </span>
+                <h3 className="font-serif text-xl font-bold text-luxury-charcoal">
+                  Artisanal Creations Coming Soon
+                </h3>
+                <p className="text-xs text-luxury-muted font-light max-w-xs">
+                  New seasonal silhouettes are being hand-sculpted in our Jaipur and Florence ateliers.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -11,24 +11,24 @@ export const heroSlidesData: HeroSlideData[] = [
     id: 1,
     image: "/images/nishya/carry_your_story_pink_arch.jpg",
     ctaText: "SHOP NOW",
-    ctaLink: "/product/safari-quilted-laptop-bag",
+    ctaLink: "/products",
   },
   {
     id: 2,
     image: "/images/nishya/carry_your_story_black_gold.jpg",
     ctaText: "EXPLORE",
-    ctaLink: "/product/mughal-forest-laptop-bag",
+    ctaLink: "/products",
   },
   {
     id: 3,
     image: "/images/nishya/carry_your_story_pink_float.jpg",
     ctaText: "DISCOVER",
-    ctaLink: "/product/safari-quilted-laptop-bag",
+    ctaLink: "/products",
   },
   {
     id: 4,
     image: "/images/nishya/little_things_big_joys_basket.jpg",
     ctaText: "SHOP NOW",
-    ctaLink: "/product/penguin-artisan-rope-basket",
+    ctaLink: "/products",
   },
 ];

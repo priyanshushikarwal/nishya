@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Plus, Search, Edit3, Trash2, ExternalLink, Filter } from "lucide-react";
-import { adminGetAllProducts, adminDeleteProduct } from "@/lib/services/products";
+import { adminGetAllProducts, adminDeleteProduct, adminClearAllProducts } from "@/lib/services/products";
 import { Product } from "@/types/product";
 import { formatPrice } from "@/lib/utils";
 
@@ -28,6 +28,13 @@ export default function AdminProductsPage() {
   const handleDelete = async (id: string, name: string) => {
     if (confirm(`Are you certain you wish to archive "${name}" from the atelier catalog?`)) {
       await adminDeleteProduct(id);
+      loadProducts();
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (confirm("Are you certain you wish to remove ALL products from the atelier catalog?")) {
+      await adminClearAllProducts();
       loadProducts();
     }
   };
@@ -56,13 +63,25 @@ export default function AdminProductsPage() {
           </h1>
         </div>
 
-        <Link
-          href="/admin/products/new"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-luxury-charcoal hover:bg-luxury-gold text-white text-xs font-semibold uppercase tracking-wider transition-colors shadow-sm cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Creation</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          {products.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold uppercase tracking-wider transition-colors shadow-xs cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Clear Catalog</span>
+            </button>
+          )}
+
+          <Link
+            href="/admin/products/new"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-luxury-charcoal hover:bg-luxury-gold text-white text-xs font-semibold uppercase tracking-wider transition-colors shadow-sm cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Creation</span>
+          </Link>
+        </div>
       </div>
 
       {/* Filters Bar */}

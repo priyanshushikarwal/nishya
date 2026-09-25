@@ -6,7 +6,8 @@ import { products } from "@/data/products";
 import { formatPrice } from "@/lib/utils";
 
 export function PromoBanner() {
-  const promoProduct = products[1]; // Classic Black Shoulder Bag
+  const promoProduct = products[1] || products[0];
+  if (!promoProduct) return null;
 
   return (
     <section className="relative px-4 sm:px-6 md:px-8 lg:px-14 py-10 sm:py-14 lg:py-20 overflow-x-clip">

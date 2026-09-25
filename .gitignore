@@ -46,5 +46,6 @@ next-env.d.ts
 /backend/nishya-api
 /backend/nishya-api.exe
 /backend/nishya-api-linux
+/backend/backend.exe
 /backend/data/
 

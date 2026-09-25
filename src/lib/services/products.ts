@@ -3,16 +3,23 @@ import { categories, Category } from "@/data/categories";
 import { Product } from "@/types/product";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
-const CMS_PRODUCTS_KEY = "nishya_cms_products_v1";
+const CMS_PRODUCTS_KEY = "nishya_cms_products_v2";
+
+// Clean up legacy v1 mock cache if present in the browser
+if (typeof window !== "undefined") {
+  try {
+    localStorage.removeItem("nishya_cms_products_v1");
+  } catch {}
+}
 
 // Helper to get local memory/storage products
 function getLocalProducts(): Product[] {
   if (typeof window !== "undefined") {
     try {
       const stored = localStorage.getItem(CMS_PRODUCTS_KEY);
-      if (stored) {
+      if (stored !== null) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       }
@@ -130,7 +137,7 @@ export async function getProducts(): Promise<Product[]> {
         .eq("status", "published")
         .order("created_at", { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && Array.isArray(data)) {
         const mapped = data.map(mapDbToProduct);
         productsCache = {
           data: mapped,
@@ -207,7 +214,7 @@ export async function adminGetAllProducts(): Promise<Product[]> {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && Array.isArray(data)) {
         return data.map(mapDbToProduct);
       }
     } catch {}
@@ -218,23 +225,24 @@ export async function adminGetAllProducts(): Promise<Product[]> {
 
 export async function adminSaveProduct(product: Product): Promise<boolean> {
   invalidateProductsCache();
-  // 1. Supabase direct write if configured
+
+  // 1. Next.js Service Role Admin API
+  if (typeof window !== "undefined") {
+    try {
+      await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product }),
+      });
+    } catch {}
+  }
+
+  // 2. Direct Supabase write attempt as fallback
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
       const dbRow = mapProductToDb(product);
       await supabase.from("products").upsert(dbRow);
-    } catch {}
-  }
-
-  // 2. Server API sync
-  if (typeof window !== "undefined") {
-    try {
-      fetch("/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(product),
-      }).catch(() => {});
     } catch {}
   }
 
@@ -254,7 +262,17 @@ export async function adminSaveProduct(product: Product): Promise<boolean> {
 
 export async function adminDeleteProduct(id: string): Promise<boolean> {
   invalidateProductsCache();
-  // 1. Supabase direct delete if configured
+
+  // 1. Next.js Service Role Admin API
+  if (typeof window !== "undefined") {
+    try {
+      await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+    } catch {}
+  }
+
+  // 2. Direct Supabase delete attempt as fallback
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -262,18 +280,24 @@ export async function adminDeleteProduct(id: string): Promise<boolean> {
     } catch {}
   }
 
-  // 2. Server API sync
-  if (typeof window !== "undefined") {
-    try {
-      fetch(`/api/products?id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-      }).catch(() => {});
-    } catch {}
-  }
-
   // 3. Local storage synchronization
   const list = getLocalProducts();
   const filtered = list.filter((p) => p.id !== id);
   saveLocalProducts(filtered);
+  return true;
+}
+
+export async function adminClearAllProducts(): Promise<boolean> {
+  invalidateProductsCache();
+
+  if (typeof window !== "undefined") {
+    try {
+      await fetch("/api/admin/products?all=true", {
+        method: "DELETE",
+      });
+    } catch {}
+  }
+
+  saveLocalProducts([]);
   return true;
 }

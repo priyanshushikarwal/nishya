@@ -29,18 +29,18 @@ export function LifestyleModel() {
             />
           </div>
 
-          {/* Product Tag (safely docked bottom-right, links to PDP) */}
+          {/* Editorial Tag */}
           <Link
-            href="/product/blush-evening-clutch"
+            href="/products"
             className="mt-3 lg:mt-0 lg:absolute lg:-bottom-4 lg:right-4 bg-white/95 backdrop-blur-md p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-luxury-border hover:border-luxury-gold shadow-lg z-20 w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[220px] transition-colors group cursor-pointer block"
           >
             <span className="text-[9px] uppercase tracking-widest text-luxury-gold font-bold block">
-              Red Carpet Ready
+              Atelier Editorial
             </span>
             <h4 className="font-serif text-xs sm:text-sm font-bold text-luxury-charcoal group-hover:text-luxury-gold mt-0.5 transition-colors">
-              Blush Evening Clutch
+              Evening Elegance
             </h4>
-            <span className="text-xs font-bold text-luxury-charcoal block mt-0.5">₹1,999</span>
+            <span className="text-xs font-semibold text-luxury-gold block mt-0.5">Explore Series &rarr;</span>
           </Link>
         </div>
 
