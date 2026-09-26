@@ -3,9 +3,9 @@
 import React, { useState, useMemo, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X, ArrowUpDown } from "lucide-react";
-import { getProducts } from "@/lib/services/products";
+import { getProducts, getCategories } from "@/lib/services/products";
 import { Product } from "@/types/product";
-import { categories } from "@/data/categories";
+import { categories as initialCategories, Category } from "@/data/categories";
 import { ProductCard } from "@/components/discovery/ProductCard";
 import { CanvasWrapper } from "@/components/layout/CanvasWrapper";
 import { Header } from "@/components/layout/Header";
@@ -18,6 +18,7 @@ function ProductsContent() {
   const initialCategory = searchParams.get("category") || "All";
 
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [categoriesList, setCategoriesList] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [sortBy, setSortBy] = useState<string>("featured");
   const [maxPrice, setMaxPrice] = useState<number>(10000);
@@ -30,11 +31,25 @@ function ProductsContent() {
     });
   };
 
+  const loadCategories = () => {
+    getCategories().then((data) => {
+      if (data && data.length > 0) {
+        setCategoriesList(data.filter((c) => c.slug !== "all"));
+      }
+    });
+  };
+
   useEffect(() => {
     loadData();
+    loadCategories();
     const handleUpdate = () => loadData();
+    const handleCatUpdate = () => loadCategories();
     window.addEventListener("nishya_products_updated", handleUpdate);
-    return () => window.removeEventListener("nishya_products_updated", handleUpdate);
+    window.addEventListener("nishya_categories_updated", handleCatUpdate);
+    return () => {
+      window.removeEventListener("nishya_products_updated", handleUpdate);
+      window.removeEventListener("nishya_categories_updated", handleCatUpdate);
+    };
   }, []);
 
   // Sync category when URL search parameters change (e.g. from mobile menu)
@@ -107,22 +122,20 @@ function ProductsContent() {
           >
             All Pieces ({allProducts.length})
           </button>
-          {categories
-            .filter((c) => c.slug !== "all")
-            .map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.name)}
-                className={cn(
-                  "px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer shrink-0 min-h-[38px]",
-                  selectedCategory === cat.name
-                    ? "bg-luxury-charcoal text-white shadow-xs"
-                    : "bg-luxury-soft text-luxury-muted hover:text-luxury-charcoal hover:bg-luxury-border/60"
-                )}
-              >
-                {cat.name}
-              </button>
-            ))}
+          {categoriesList.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.name)}
+              className={cn(
+                "px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer shrink-0 min-h-[38px]",
+                selectedCategory === cat.name
+                  ? "bg-luxury-charcoal text-white shadow-xs"
+                  : "bg-luxury-soft text-luxury-muted hover:text-luxury-charcoal hover:bg-luxury-border/60"
+              )}
+            >
+              {cat.name}
+            </button>
+          ))}
         </div>
 
         {/* Filter and Sort Toolbar */}

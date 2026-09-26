@@ -183,6 +183,16 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 
 let categoriesCache: { data: Category[]; expiresAt: number } | null = null;
 
+export function invalidateCategoriesCache() {
+  categoriesCache = null;
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("nishya_categories_updated", () => {
+    categoriesCache = null;
+  });
+}
+
 export async function getCategories(): Promise<Category[]> {
   if (categoriesCache && categoriesCache.expiresAt > Date.now()) {
     return categoriesCache.data;
