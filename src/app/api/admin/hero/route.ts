@@ -96,6 +96,22 @@ export async function PUT(req: NextRequest) {
     const body = await req.json().catch(() => null);
     const campaigns = Array.isArray(body?.campaigns) ? body.campaigns : [];
 
+    const currentValidIds = campaigns.map((c: any) => toValidUUID(String(c.id)));
+
+    // 1. Delete any campaign currently in DB that was removed from the admin list
+    if (currentValidIds.length > 0) {
+      const { data: existing } = await admin.from("hero_campaigns").select("id");
+      if (existing) {
+        const idsToDelete = existing
+          .map((row: any) => row.id)
+          .filter((dbId: string) => !currentValidIds.includes(dbId));
+        if (idsToDelete.length > 0) {
+          await admin.from("hero_campaigns").delete().in("id", idsToDelete);
+        }
+      }
+    }
+
+    // 2. Upsert each campaign with exact sort_order and is_active flag
     for (let i = 0; i < campaigns.length; i++) {
       const c = campaigns[i];
       const validId = toValidUUID(String(c.id));
@@ -139,7 +155,7 @@ export async function DELETE(req: NextRequest) {
     const { error } = await admin
       .from("hero_campaigns")
       .delete()
-      .eq("id", validId);
+      .or(`id.eq.${validId},id.eq.${id}`);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

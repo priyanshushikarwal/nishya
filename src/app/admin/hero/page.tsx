@@ -78,11 +78,17 @@ export default function AdminHeroManager() {
     setCampaigns(renumbered);
   };
 
-  // Toggle active status
-  const toggleActive = (id: string) => {
-    setCampaigns((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, is_active: !c.is_active } : c))
+  // Toggle active status and immediately persist to database
+  const toggleActive = async (id: string) => {
+    const updated = campaigns.map((c) =>
+      c.id === id ? { ...c, is_active: !c.is_active } : c
     );
+    setCampaigns(updated);
+
+    const target = updated.find((c) => c.id === id);
+    if (target) {
+      await saveHeroCampaign(target);
+    }
   };
 
   // Open modal for new campaign
@@ -110,12 +116,13 @@ export default function AdminHeroManager() {
     setIsModalOpen(true);
   };
 
-  // Delete campaign
+  // Delete campaign and sync remaining list immediately to database
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you wish to delete this hero campaign?")) return;
     const updated = campaigns.filter((c) => c.id !== id);
     setCampaigns(updated);
     await deleteHeroCampaign(id);
+    await saveHeroCampaignsOrder(updated);
   };
 
   // Handle image upload from file input

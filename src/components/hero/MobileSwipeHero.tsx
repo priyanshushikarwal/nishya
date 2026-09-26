@@ -23,16 +23,17 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    if (propCampaigns && propCampaigns.length > 0) {
-      setActiveCampaigns(propCampaigns);
+    if (propCampaigns) {
+      const activeOnly = propCampaigns.filter((c) => c.is_active);
+      setActiveCampaigns(activeOnly);
       return;
     }
 
     const loadCampaigns = () => {
       getHeroCampaigns().then((data) => {
-        if (data && data.length > 0) {
+        if (data) {
           const activeOnly = data.filter((c) => c.is_active);
-          setActiveCampaigns(activeOnly.length > 0 ? activeOnly : data);
+          setActiveCampaigns(activeOnly);
         }
       });
     };
