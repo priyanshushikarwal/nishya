@@ -22,17 +22,27 @@ import { formatPrice } from "@/lib/utils";
 export default function AdminDashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [patronsCount, setPatronsCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadDashboardData() {
-      const [allProducts, allOrders] = await Promise.all([
-        adminGetAllProducts(),
-        getAdminOrders(),
-      ]);
-      setProducts(allProducts);
-      setOrders(allOrders);
-      setLoading(false);
+      try {
+        const [allProducts, allOrders, customerData] = await Promise.all([
+          adminGetAllProducts(),
+          getAdminOrders(),
+          fetch("/api/admin/customers")
+            .then((r) => r.json())
+            .catch(() => ({ stats: { total_registered: 0 } })),
+        ]);
+        setProducts(allProducts);
+        setOrders(allOrders);
+        if (customerData?.stats?.total_registered !== undefined) {
+          setPatronsCount(customerData.stats.total_registered);
+        }
+      } finally {
+        setLoading(false);
+      }
     }
     loadDashboardData();
   }, []);
@@ -171,10 +181,16 @@ export default function AdminDashboardPage() {
             {lowStockCount}{" "}
             <span className="text-xs font-sans text-amber-700 font-normal">low inventory</span>
           </div>
-          <div className="text-[11px] text-luxury-muted flex items-center gap-1">
-            <Users className="w-3 h-3 text-luxury-gold" />
-            <span>48 registered VIP clientele</span>
-          </div>
+          <Link
+            href="/admin/customers"
+            className="text-[11px] text-luxury-muted hover:text-luxury-charcoal flex items-center gap-1.5 transition-colors group cursor-pointer"
+          >
+            <Users className="w-3.5 h-3.5 text-luxury-gold" />
+            <span className="group-hover:underline">
+              {patronsCount} registered {patronsCount === 1 ? "patron" : "patrons"}
+            </span>
+            <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-luxury-gold" />
+          </Link>
         </div>
       </div>
 
