@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,7 +18,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Product } from "@/types/product";
-import { adminSaveProduct } from "@/lib/services/products";
+import { adminSaveProduct, getCategories } from "@/lib/services/products";
+import { categories as defaultCategories } from "@/data/categories";
 import { uploadMediaFile } from "@/lib/services/cms";
 import { calculateDiscount, formatPrice } from "@/lib/utils";
 
@@ -75,6 +76,22 @@ export function ProductEditorForm({ initialProduct }: ProductEditorFormProps) {
   const [newDetailText, setNewDetailText] = useState("");
   const [newColorName, setNewColorName] = useState("");
   const [newColorHex, setNewColorHex] = useState("#B87924");
+
+  // Dynamic available categories from database with local fallback
+  const [availableCategories, setAvailableCategories] = useState<string[]>(() => {
+    return defaultCategories
+      .filter((c) => c.slug !== "all")
+      .map((c) => c.name);
+  });
+
+  useEffect(() => {
+    getCategories().then((cats) => {
+      if (cats && cats.length > 0) {
+        const names = cats.filter((c) => c.slug !== "all").map((c) => c.name);
+        setAvailableCategories(names);
+      }
+    });
+  }, []);
 
   // Auto-generate slug from name if creating new
   const handleNameChange = (name: string) => {
@@ -309,18 +326,14 @@ export function ProductEditorForm({ initialProduct }: ProductEditorFormProps) {
                   onChange={(e) => setProduct({ ...product, category: e.target.value as any })}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-luxury-soft/60 border border-luxury-border text-sm text-luxury-charcoal focus:outline-none focus:border-luxury-gold cursor-pointer"
                 >
-                  <option value="Laptop Bags">Laptop Bags</option>
-                  <option value="Handbags">Handbags</option>
-                  <option value="Shoulder Bags">Shoulder Bags</option>
-                  <option value="Totes">Totes</option>
-                  <option value="Clutches">Clutches</option>
-                  <option value="Mini Bags">Mini Bags</option>
-                  <option value="Wallets">Wallets</option>
-                  <option value="Backpacks">Backpacks</option>
-                  <option value="Sling Bags">Sling Bags</option>
-                  <option value="Hats & Headwear">Hats & Headwear</option>
-                  <option value="Yoga & Gym Bags">Yoga & Gym Bags</option>
-                  <option value="Artisan Storage">Artisan Storage</option>
+                  {availableCategories.map((catName) => (
+                    <option key={catName} value={catName}>
+                      {catName}
+                    </option>
+                  ))}
+                  {product.category && !availableCategories.includes(product.category) && (
+                    <option value={product.category}>{product.category}</option>
+                  )}
                 </select>
               </div>
 

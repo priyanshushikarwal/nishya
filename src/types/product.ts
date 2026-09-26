@@ -14,6 +14,7 @@ export interface Product {
     | "Handbags"
     | "Shoulder Bags"
     | "Clutches"
+    | "Pouch Bags"
     | "Totes"
     | "Mini Bags"
     | "Wallets"
