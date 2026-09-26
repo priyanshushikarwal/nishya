@@ -12,6 +12,7 @@
     "deploy:cloudflare": "opennextjs-cloudflare deploy"
   },
   "dependencies": {
+    "@microsoft/clarity": "^1.0.2",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.112.3",
     "embla-carousel-react": "^8.6.0",
