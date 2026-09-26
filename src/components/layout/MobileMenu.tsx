@@ -1,18 +1,35 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { X, ArrowRight, Phone, Mail, Sparkles, Package, LogOut, LogIn, UserPlus } from "lucide-react";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { categories as initialCategories, Category } from "@/data/categories";
+import { getCategories } from "@/lib/services/products";
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const initialCats = initialCategories.filter((c) => c.slug !== "all");
+
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { user, profile, isAuthenticated, signOut } = useCustomerAuth();
+  const [categoriesList, setCategoriesList] = useState<Category[]>(initialCats);
+
+  useEffect(() => {
+    let isMounted = true;
+    getCategories().then((data) => {
+      if (isMounted && data && data.length > 0) {
+        setCategoriesList(data.filter((c) => c.slug !== "all"));
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Prevent background scrolling while mobile menu is open
   useEffect(() => {
@@ -154,30 +171,32 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 </div>
                 <ArrowRight className="w-4 h-4 text-luxury-muted" />
               </Link>
-              <Link
-                href="/products?category=Handbags"
-                onClick={onClose}
-                className="flex items-center justify-between py-2.5 px-3 rounded-xl text-base font-serif font-semibold text-luxury-charcoal hover:bg-luxury-soft hover:text-luxury-gold transition-colors"
-              >
-                <span>Handbags</span>
-                <ArrowRight className="w-4 h-4 text-luxury-muted" />
-              </Link>
-              <Link
-                href="/products?category=Clutches"
-                onClick={onClose}
-                className="flex items-center justify-between py-2.5 px-3 rounded-xl text-base font-serif font-semibold text-luxury-charcoal hover:bg-luxury-soft hover:text-luxury-gold transition-colors"
-              >
-                <span>Clutches</span>
-                <ArrowRight className="w-4 h-4 text-luxury-muted" />
-              </Link>
-              <Link
-                href="/products?category=Totes"
-                onClick={onClose}
-                className="flex items-center justify-between py-2.5 px-3 rounded-xl text-base font-serif font-semibold text-luxury-charcoal hover:bg-luxury-soft hover:text-luxury-gold transition-colors"
-              >
-                <span>Everyday Totes</span>
-                <ArrowRight className="w-4 h-4 text-luxury-muted" />
-              </Link>
+            </div>
+
+            {/* 2. All Categories Directory */}
+            <div className="py-3 space-y-1">
+              <div className="px-3 pb-2 flex items-center justify-between">
+                <span className="text-[10px] uppercase font-bold tracking-[0.22em] text-luxury-gold">
+                  Categories
+                </span>
+                <span className="text-[10px] font-sans font-medium text-luxury-muted">
+                  {categoriesList.length} Collections
+                </span>
+              </div>
+
+              <div className="space-y-0.5">
+                {categoriesList.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/products?category=${encodeURIComponent(cat.name)}`}
+                    onClick={onClose}
+                    className="flex items-center justify-between py-2.5 px-3 rounded-xl text-base font-serif font-semibold text-luxury-charcoal hover:bg-luxury-soft hover:text-luxury-gold transition-colors group"
+                  >
+                    <span className="group-hover:translate-x-0.5 transition-transform">{cat.name}</span>
+                    <ArrowRight className="w-4 h-4 text-luxury-muted group-hover:text-luxury-gold group-hover:translate-x-1 transition-all" />
+                  </Link>
+                ))}
+              </div>
             </div>
 
             <div className="py-3 space-y-1">

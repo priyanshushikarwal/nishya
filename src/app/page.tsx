@@ -79,14 +79,9 @@ export default function HomePage() {
     : [
         <HeroSection key="hero" />,
         <WhatsNewSection key="whats_new" />,
-        <BrandStrip key="brand_strip" />,
-        <CircularFeature key="circular_showcase" />,
         <ProductDiscovery key="product_discovery" />,
         <PromoBanner key="promo_banner" />,
         <LifestyleModel key="lifestyle_model" />,
-        <EverydaySection key="everyday_section" />,
-        <UniquenessSection key="uniqueness_section" />,
-        <InstagramGallery key="instagram_gallery" />,
       ];
 
   return (

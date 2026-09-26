@@ -77,4 +77,25 @@ export const categories: Category[] = [
     description: "Effortless underarm classics with polished brass accents",
     count: 3,
   },
+  {
+    id: "mini-bags",
+    name: "Mini Bags",
+    slug: "mini-bags",
+    description: "Petite micro statement pieces",
+    count: 1,
+  },
+  {
+    id: "wallets",
+    name: "Wallets",
+    slug: "wallets",
+    description: "Bifold calfskin cardholders & pouches",
+    count: 0,
+  },
+  {
+    id: "artisan-storage",
+    name: "Artisan Storage",
+    slug: "artisan-storage",
+    description: "Hand-braided natural cotton rope baskets",
+    count: 0,
+  },
 ];

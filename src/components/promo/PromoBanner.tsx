@@ -1,12 +1,24 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/services/products";
+import { Product } from "@/types/product";
 import { formatPrice } from "@/lib/utils";
 
 export function PromoBanner() {
-  const promoProduct = products[1] || products[0];
+  const [promoProduct, setPromoProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    getProducts().then((all) => {
+      if (all && all.length > 0) {
+        setPromoProduct(all[1] || all[0]);
+      }
+    });
+  }, []);
+
   if (!promoProduct) return null;
 
   return (
@@ -14,11 +26,11 @@ export function PromoBanner() {
       <div className="w-full max-w-[1360px] mx-auto">
         {/* Dark Charcoal Container with Rounded Corners */}
         <div className="relative rounded-2xl sm:rounded-3xl bg-[#1E1D22] text-white p-6 sm:p-10 lg:p-16 overflow-hidden shadow-2xl border border-white/10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-          {/* Subtle Decorative Linework (safely contained) */}
+          {/* Subtle Decorative Linework */}
           <div className="hidden sm:block absolute -right-20 -top-20 w-80 h-80 rounded-full border border-white/5 pointer-events-none" />
           <div className="hidden sm:block absolute right-10 -bottom-20 w-72 h-72 rounded-full border border-dashed border-luxury-gold/15 pointer-events-none" />
 
-          {/* EDITORIAL CONTENT (Mobile: Top, Desktop: Left 7 cols) */}
+          {/* EDITORIAL CONTENT */}
           <div className="lg:col-span-7 space-y-4 sm:space-y-6 z-10 text-center sm:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15">
               <Sparkles className="w-3 h-3 text-luxury-gold shrink-0" />
@@ -57,7 +69,7 @@ export function PromoBanner() {
             </div>
           </div>
 
-          {/* LARGE PROMINENT HANDBAG IMAGE (Mobile: Stacks below, Desktop: Right 5 cols) */}
+          {/* LARGE PROMINENT HANDBAG IMAGE */}
           <div className="lg:col-span-5 relative flex items-center justify-center pt-2 sm:pt-4 lg:pt-0">
             {/* Ambient gold glow */}
             <div className="absolute w-48 sm:w-64 h-48 sm:h-64 rounded-full bg-luxury-gold/10 blur-2xl pointer-events-none" />

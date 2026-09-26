@@ -181,8 +181,39 @@ export async function getFeaturedProducts(): Promise<Product[]> {
   return all.filter((p) => p.featured);
 }
 
+let categoriesCache: { data: Category[]; expiresAt: number } | null = null;
+
 export async function getCategories(): Promise<Category[]> {
-  return categories;
+  if (categoriesCache && categoriesCache.expiresAt > Date.now()) {
+    return categoriesCache.data;
+  }
+
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .eq("is_visible", true)
+        .order("sort_order", { ascending: true });
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const mapped = data.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          description: c.description || "",
+          count: 0,
+        }));
+        categoriesCache = { data: mapped, expiresAt: Date.now() + 60 * 1000 };
+        return mapped;
+      }
+    } catch {}
+  }
+
+  const fallback = categories.filter((c) => c.slug !== "all");
+  categoriesCache = { data: fallback, expiresAt: Date.now() + 60 * 1000 };
+  return fallback;
 }
 
 export async function getRelatedProducts(currentSlug: string, limit = 4): Promise<Product[]> {

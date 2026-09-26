@@ -37,6 +37,12 @@ function ProductsContent() {
     return () => window.removeEventListener("nishya_products_updated", handleUpdate);
   }, []);
 
+  // Sync category when URL search parameters change (e.g. from mobile menu)
+  useEffect(() => {
+    const cat = searchParams.get("category");
+    setSelectedCategory(cat || "All");
+  }, [searchParams]);
+
   // Filter & Sort computation
   const filteredProducts = useMemo(() => {
     return allProducts

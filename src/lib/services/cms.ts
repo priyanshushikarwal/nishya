@@ -45,14 +45,14 @@ const defaultHomepageSections: HomepageSection[] = [
   { id: "announcement", title: "Announcement Bar", subtitle: "Top marquee banner", sort_order: 1, is_visible: true, content: { text: "✦ COMPLIMENTARY INSURED PRIORITY DELIVERY ON ORDERS OVER ₹5,000 | ATELIER GUARANTEE ✦" } },
   { id: "hero", title: "Hero Showcase", subtitle: "Asymmetric desktop hero & swipe mobile carousel", sort_order: 2, is_visible: true, content: { heading: "Your Ultimate Destination for Luxe Handbags", subheading: "Crafted for elegance, designed for confidence. Architectural handbag creations sculpted in full-grain Italian leather." } },
   { id: "whats_new", title: "What's New", subtitle: "Autumn / Winter Collection highlights", sort_order: 3, is_visible: true, content: { heading: "What's New", season: "Autumn / Winter 2026 Collection" } },
-  { id: "brand_strip", title: "Brand Atelier Strip", subtitle: "Craftsmanship marquee", sort_order: 4, is_visible: true, content: { strip_text: "100% ITALIAN CALFSKIN • HAND-FINISHED IN JAIPUR & FLORENCE • LIFETIME ATELIER GUARANTEE" } },
-  { id: "circular_showcase", title: "Featured Circular Showcase", subtitle: "The Signature Safari architectural arch spotlight", sort_order: 5, is_visible: true, content: { tagline: "The Signature Safari", subtitle: "Where artisanal craftsmanship meets everyday elegance", discount: "50%" } },
+  { id: "brand_strip", title: "Brand Atelier Strip", subtitle: "Craftsmanship marquee", sort_order: 4, is_visible: false, content: { strip_text: "100% ITALIAN CALFSKIN • HAND-FINISHED IN JAIPUR & FLORENCE • LIFETIME ATELIER GUARANTEE" } },
+  { id: "circular_showcase", title: "Featured Circular Showcase", subtitle: "The Signature Safari architectural arch spotlight", sort_order: 5, is_visible: false, content: { tagline: "The Signature Safari", subtitle: "Where artisanal craftsmanship meets everyday elegance", discount: "50%" } },
   { id: "product_discovery", title: "Curated Selection Grid", subtitle: "4-Column luxury handbag discovery grid", sort_order: 6, is_visible: true, content: { heading: "Discover the finest bags that combine style, elegance and perfection.", button_text: "Explore All Pieces" } },
   { id: "promo_banner", title: "Promotional Spotlight Banner", subtitle: "Dark gilded luxury spotlight banner", sort_order: 7, is_visible: true, content: { title: "New Season, New Icons", subtitle: "Discover our latest collection crafted for modern elegance.", button_text: "Shop Now" } },
   { id: "lifestyle_model", title: "Editorial Showcase", subtitle: "Effortless grace portrait model layout", sort_order: 8, is_visible: true, content: { heading: "Effortless Grace for Every Occasion", handwritten: "Designed for every occasion" } },
-  { id: "everyday_section", title: "Daily Belongings Section", subtitle: "Everyday split editorial with gold seal", sort_order: 9, is_visible: true, content: { heading: "For your everyday Belongings", seal_text: "ATELIER GENUINE LEATHER" } },
-  { id: "uniqueness_section", title: "Designed for Uniqueness", subtitle: "Artisanal individuality magazine block", sort_order: 10, is_visible: true, content: { heading: "Designed for Uniqueness", quote: "True luxury is having what nobody else possesses." } },
-  { id: "instagram_gallery", title: "Social Editorial Gallery", subtitle: "#NISHYA BAGS seasonal lookbook grid", sort_order: 11, is_visible: true, content: { hashtag: "#NISHYA BAGS", heading: "Unbox Your New Favourite" } },
+  { id: "everyday_section", title: "Daily Belongings Section", subtitle: "Everyday split editorial with gold seal", sort_order: 9, is_visible: false, content: { heading: "For your everyday Belongings", seal_text: "ATELIER GENUINE LEATHER" } },
+  { id: "uniqueness_section", title: "Designed for Uniqueness", subtitle: "Artisanal individuality magazine block", sort_order: 10, is_visible: false, content: { heading: "Designed for Uniqueness", quote: "True luxury is having what nobody else possesses." } },
+  { id: "instagram_gallery", title: "Social Editorial Gallery", subtitle: "#NISHYA BAGS seasonal lookbook grid", sort_order: 11, is_visible: false, content: { hashtag: "#NISHYA BAGS", heading: "Unbox Your New Favourite" } },
   { id: "footer", title: "Footer & Newsletter", subtitle: "Atelier multi-column footer", sort_order: 12, is_visible: true, content: { tagline: "Timeless handbags crafted for modern elegance.", email: "concierge@nishya.luxury" } },
 ];
 
@@ -249,6 +249,25 @@ export async function getHomepageSections(): Promise<HomepageSection[]> {
 
 export async function saveHomepageSections(sections: HomepageSection[]): Promise<boolean> {
   invalidateCmsCache();
+
+  // 1. Try server API route first (authoritative database update using Service Role)
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/admin/sections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sections }),
+      });
+      if (res.ok) {
+        window.dispatchEvent(new Event("nishya_cms_updated"));
+        return true;
+      }
+    } catch (err) {
+      console.error("Failed to save homepage sections to server:", err);
+    }
+  }
+
+  // 2. Direct Supabase write fallback
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
