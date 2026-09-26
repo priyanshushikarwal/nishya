@@ -9,7 +9,6 @@ import { categories as initialCategories, Category } from "@/data/categories";
 import { ProductCard } from "@/components/discovery/ProductCard";
 import { CanvasWrapper } from "@/components/layout/CanvasWrapper";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { formatPrice, cn } from "@/lib/utils";
 
@@ -341,8 +340,6 @@ function ProductsContent() {
           </div>
         </div>
       )}
-
-      <Footer />
     </CanvasWrapper>
   );
 }
