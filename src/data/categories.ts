@@ -50,6 +50,13 @@ export const categories: Category[] = [
     count: 5,
   },
   {
+    id: "pouch-bags",
+    name: "Pouch Bags",
+    slug: "pouch-bags",
+    description: "Artisanal designer pouches, vanity cases, and luxury coin pouches",
+    count: 0,
+  },
+  {
     id: "yoga-gym-bags",
     name: "Yoga & Gym Bags",
     slug: "yoga-gym-bags",

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   motion,
   useMotionValue,
@@ -18,12 +18,34 @@ export interface MobileSwipeHeroProps {
 }
 
 export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroProps = {}) {
-  const [activeCampaigns, setActiveCampaigns] = useState<HeroCampaign[]>(propCampaigns || []);
+  // Initialize with cached campaigns or active prop campaigns to prevent any flash
+  const [activeCampaigns, setActiveCampaigns] = useState<HeroCampaign[]>(() => {
+    if (propCampaigns && propCampaigns.length > 0) {
+      return propCampaigns.filter((c) => c.is_active);
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("nishya_cms_hero_campaigns_v1");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.filter((c: any) => c.is_active);
+          }
+        }
+      } catch {}
+    }
+    return [];
+  });
+
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Animation lock state & refs to GUARANTEE the carousel never gets stuck
   const [isAnimating, setIsAnimating] = useState(false);
+  const isAnimatingRef = useRef(false);
+  const animTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (propCampaigns) {
+    if (propCampaigns && propCampaigns.length > 0) {
       const activeOnly = propCampaigns.filter((c) => c.is_active);
       setActiveCampaigns(activeOnly);
       return;
@@ -31,7 +53,7 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
 
     const loadCampaigns = () => {
       getHeroCampaigns().then((data) => {
-        if (data) {
+        if (data && data.length > 0) {
           const activeOnly = data.filter((c) => c.is_active);
           setActiveCampaigns(activeOnly);
         }
@@ -45,9 +67,11 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
     return () => {
       window.removeEventListener("nishya_cms_updated", loadCampaigns);
       window.removeEventListener("focus", loadCampaigns);
+      if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
     };
   }, [propCampaigns]);
 
+  // Slides are guaranteed to match active campaigns without deleted/filler slides
   const slides = activeCampaigns.length > 0
     ? activeCampaigns.map((c) => ({
         id: c.id,
@@ -59,14 +83,13 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
 
   const totalSlides = slides.length || 1;
 
-  // Track viewport / card width dynamically
+  // Track responsive card distance
   const [cardWidth, setCardWidth] = useState(315);
   const gap = 14;
   const cardDistance = cardWidth + gap;
 
   useEffect(() => {
     const updateSize = () => {
-      // Calculate responsive card width (~82% of viewport, bounded between 290 and 340)
       const w = Math.min(340, Math.max(290, window.innerWidth * 0.82));
       setCardWidth(w);
     };
@@ -75,71 +98,120 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // Motion value tracking the drag offset
+  // Motion value tracking horizontal drag
   const dragX = useMotionValue(0);
 
-  // Trigger smooth transition to the next slide
+  // Safety unlock helper that guarantees isAnimating is never stuck permanently
+  const releaseLock = useCallback(() => {
+    if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+    dragX.stop();
+    dragX.set(0);
+    isAnimatingRef.current = false;
+    setIsAnimating(false);
+  }, [dragX]);
+
+  // Advance to next slide with guaranteed completion and watchdog timer
   const handleNext = useCallback(
     (targetIndex?: number) => {
-      if (isAnimating) return;
+      if (isAnimatingRef.current) return;
+      isAnimatingRef.current = true;
       setIsAnimating(true);
+
+      // Stop any existing animation
+      dragX.stop();
+
+      // Watchdog failsafe: automatically unlocks after 380ms even if animation was interrupted
+      if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+      animTimeoutRef.current = setTimeout(() => {
+        setCurrentIndex((prev) =>
+          targetIndex !== undefined
+            ? targetIndex
+            : ((prev + 1) % totalSlides + totalSlides) % totalSlides
+        );
+        releaseLock();
+      }, 380);
 
       animate(dragX, -cardDistance, {
-        duration: 0.35,
+        duration: 0.32,
         ease: [0.22, 1, 0.36, 1],
         onComplete: () => {
-          setCurrentIndex((prev) =>
-            targetIndex !== undefined ? targetIndex : (prev + 1) % totalSlides
-          );
-          dragX.set(0);
-          setIsAnimating(false);
-        },
-      });
-    },
-    [cardDistance, dragX, isAnimating, totalSlides]
-  );
-
-  // Trigger smooth transition to the previous slide
-  const handlePrev = useCallback(
-    (targetIndex?: number) => {
-      if (isAnimating) return;
-      setIsAnimating(true);
-
-      animate(dragX, cardDistance, {
-        duration: 0.35,
-        ease: [0.22, 1, 0.36, 1],
-        onComplete: () => {
+          if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
           setCurrentIndex((prev) =>
             targetIndex !== undefined
               ? targetIndex
-              : (prev - 1 + totalSlides) % totalSlides
+              : ((prev + 1) % totalSlides + totalSlides) % totalSlides
           );
           dragX.set(0);
+          isAnimatingRef.current = false;
           setIsAnimating(false);
         },
       });
     },
-    [cardDistance, dragX, isAnimating, totalSlides]
+    [cardDistance, dragX, releaseLock, totalSlides]
   );
 
-  // Handle pointer / touch release
+  // Return to previous slide with guaranteed completion and watchdog timer
+  const handlePrev = useCallback(
+    (targetIndex?: number) => {
+      if (isAnimatingRef.current) return;
+      isAnimatingRef.current = true;
+      setIsAnimating(true);
+
+      // Stop any existing animation
+      dragX.stop();
+
+      // Watchdog failsafe: automatically unlocks after 380ms even if animation was interrupted
+      if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+      animTimeoutRef.current = setTimeout(() => {
+        setCurrentIndex((prev) =>
+          targetIndex !== undefined
+            ? targetIndex
+            : ((prev - 1) % totalSlides + totalSlides) % totalSlides
+        );
+        releaseLock();
+      }, 380);
+
+      animate(dragX, cardDistance, {
+        duration: 0.32,
+        ease: [0.22, 1, 0.36, 1],
+        onComplete: () => {
+          if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+          setCurrentIndex((prev) =>
+            targetIndex !== undefined
+              ? targetIndex
+              : ((prev - 1) % totalSlides + totalSlides) % totalSlides
+          );
+          dragX.set(0);
+          isAnimatingRef.current = false;
+          setIsAnimating(false);
+        },
+      });
+    },
+    [cardDistance, dragX, releaseLock, totalSlides]
+  );
+
+  // Handle pointer / touch release with responsive threshold
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (isAnimating) return;
+    if (isAnimatingRef.current) return;
 
     const offsetX = info.offset.x;
     const velocityX = info.velocity.x;
-    const SWIPE_THRESHOLD = 50;
-    const VELOCITY_THRESHOLD = 260;
+    const SWIPE_THRESHOLD = 35;
+    const VELOCITY_THRESHOLD = 180;
 
     if (offsetX < -SWIPE_THRESHOLD || velocityX < -VELOCITY_THRESHOLD) {
       handleNext();
     } else if (offsetX > SWIPE_THRESHOLD || velocityX > VELOCITY_THRESHOLD) {
       handlePrev();
     } else {
+      dragX.stop();
       animate(dragX, 0, {
         type: "spring",
         stiffness: 420,
-        damping: 28,
+        damping: 30,
+        onComplete: () => {
+          dragX.set(0);
+        },
       });
     }
   };
@@ -154,9 +226,9 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleNext, handlePrev]);
 
-  // Indices for the 3 visible slots
-  const prevIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-  const nextIndex = (currentIndex + 1) % totalSlides;
+  // Robust circular indices for the 3 slots
+  const prevIndex = ((currentIndex - 1) % totalSlides + totalSlides) % totalSlides;
+  const nextIndex = ((currentIndex + 1) % totalSlides + totalSlides) % totalSlides;
 
   return (
     <section
@@ -192,27 +264,31 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
         <motion.div
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.8}
+          dragElastic={0.7}
           dragDirectionLock={true}
           onDragEnd={handleDragEnd}
           style={{
             x: dragX,
-            touchAction: "pan-y", // Preserves native vertical page scrolling
+            touchAction: "pan-y",
           }}
           className="relative w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing will-change-transform z-10"
         >
           {/* 1. LEFT PEEKING CARD */}
-          <SlotCard
-            key={`prev-${prevIndex}`}
-            slide={slides[prevIndex]}
-            cardWidth={cardWidth}
-            baseOffset={-cardDistance}
-            dragX={dragX}
-            cardDistance={cardDistance}
-            onClick={handlePrev}
-            totalSlides={totalSlides}
-            slideIndex={prevIndex}
-          />
+          {totalSlides > 1 && (
+            <SlotCard
+              key={`prev-${prevIndex}`}
+              slide={slides[prevIndex]}
+              cardWidth={cardWidth}
+              baseOffset={-cardDistance}
+              dragX={dragX}
+              cardDistance={cardDistance}
+              onClick={() => {
+                if (Math.abs(dragX.get()) < 5) handlePrev();
+              }}
+              totalSlides={totalSlides}
+              slideIndex={prevIndex}
+            />
+          )}
 
           {/* 2. CENTER ACTIVE CARD */}
           <SlotCard
@@ -228,20 +304,22 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
           />
 
           {/* 3. RIGHT PEEKING CARD */}
-          <SlotCard
-            key={`next-${nextIndex}`}
-            slide={slides[nextIndex]}
-            cardWidth={cardWidth}
-            baseOffset={cardDistance}
-            dragX={dragX}
-            cardDistance={cardDistance}
-            onClick={handleNext}
-            totalSlides={totalSlides}
-            slideIndex={nextIndex}
-          />
+          {totalSlides > 1 && (
+            <SlotCard
+              key={`next-${nextIndex}`}
+              slide={slides[nextIndex]}
+              cardWidth={cardWidth}
+              baseOffset={cardDistance}
+              dragX={dragX}
+              cardDistance={cardDistance}
+              onClick={() => {
+                if (Math.abs(dragX.get()) < 5) handleNext();
+              }}
+              totalSlides={totalSlides}
+              slideIndex={nextIndex}
+            />
+          )}
         </motion.div>
-
-
       </div>
 
       {/* ========================================================= */}
@@ -252,7 +330,7 @@ export function MobileSwipeHero({ campaigns: propCampaigns }: MobileSwipeHeroPro
           currentIndex={currentIndex}
           totalSlides={totalSlides}
           onSelectIndex={(targetIdx: number) => {
-            if (targetIdx === currentIndex || isAnimating) return;
+            if (targetIdx === currentIndex || isAnimatingRef.current) return;
             if (targetIdx > currentIndex) {
               handleNext(targetIdx);
             } else {
@@ -290,18 +368,16 @@ function SlotCard({
   totalSlides: number;
   slideIndex?: number;
 }) {
-  // Compute continuous scale based on relative distance from center
   const scale = useTransform(
     dragX,
     [-cardDistance, 0, cardDistance],
     isCenter
       ? [0.93, 1.0, 0.93]
       : baseOffset < 0
-      ? [0.86, 0.93, 1.0] // Left card becomes center when dragging right
-      : [1.0, 0.93, 0.86] // Right card becomes center when dragging left
+      ? [0.86, 0.93, 1.0]
+      : [1.0, 0.93, 0.86]
   );
 
-  // Subtle 3D perspective rotation
   const rotate = useTransform(
     dragX,
     [-cardDistance, 0, cardDistance],
@@ -312,7 +388,6 @@ function SlotCard({
       : [0, 3, 5]
   );
 
-  // Opacity fade for background cards
   const opacity = useTransform(
     dragX,
     [-cardDistance, 0, cardDistance],
@@ -349,5 +424,4 @@ function SlotCard({
   );
 }
 
-// Export as MobileHeroCarousel as well
 export { MobileSwipeHero as MobileHeroCarousel };

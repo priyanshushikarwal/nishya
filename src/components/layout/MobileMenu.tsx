@@ -21,13 +21,18 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
   useEffect(() => {
     let isMounted = true;
-    getCategories().then((data) => {
-      if (isMounted && data && data.length > 0) {
-        setCategoriesList(data.filter((c) => c.slug !== "all"));
-      }
-    });
+    const fetchCats = () => {
+      getCategories().then((data) => {
+        if (isMounted && data && data.length > 0) {
+          setCategoriesList(data.filter((c) => c.slug !== "all"));
+        }
+      });
+    };
+    fetchCats();
+    window.addEventListener("nishya_categories_updated", fetchCats);
     return () => {
       isMounted = false;
+      window.removeEventListener("nishya_categories_updated", fetchCats);
     };
   }, []);
 

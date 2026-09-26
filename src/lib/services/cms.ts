@@ -57,10 +57,10 @@ const defaultHomepageSections: HomepageSection[] = [
 ];
 
 const defaultHeroCampaigns: HeroCampaign[] = localHeroSlides.map((slide, idx) => ({
-  id: `hero-${slide.id}`,
-  title: idx === 0 ? "Safari Quilted Laptop Bag" : idx === 1 ? "Mughal Forest Laptop Bag" : idx === 2 ? "Architectural Geometry" : "Artisan Rope Basket",
-  subtitle: idx === 0 ? "Carry Your Story" : idx === 1 ? "Heritage in Every Detail" : idx === 2 ? "Sculptural Poise" : "Little Things Big Joys",
-  description: "Handcrafted in full-grain Italian leather with hand-polished 18k gold hardware.",
+  id: String(slide.id),
+  title: idx === 0 ? "The Sovereign Collection" : idx === 1 ? "The Noir & Gilded Gold Edition" : "New Season Icon",
+  subtitle: idx === 0 ? "Haute Maroquinerie" : idx === 1 ? "Atelier Masterpiece" : "Haute Maroquinerie",
+  description: "Handcrafted in full-grain Italian calfskin with hand-polished 18k gold hardware.",
   cta_text: slide.ctaText,
   cta_url: slide.ctaLink,
   desktop_image: slide.image,
