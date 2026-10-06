@@ -20,14 +20,21 @@ function ProductsContent() {
   const [categoriesList, setCategoriesList] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [sortBy, setSortBy] = useState<string>("featured");
-  const [maxPrice, setMaxPrice] = useState<number>(10000);
+  const [maxPrice, setMaxPrice] = useState<number>(15000);
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const loadData = () => {
-    getProducts().then((data) => {
-      setAllProducts(data);
-    });
+    setIsLoading(true);
+    getProducts()
+      .then((data) => {
+        setAllProducts(data);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
   };
 
   const loadCategories = () => {
@@ -78,20 +85,19 @@ function ProductsContent() {
         if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
         return 0; // "featured"
       });
-  }, [selectedCategory, sortBy, maxPrice, inStockOnly]);
+  }, [allProducts, selectedCategory, sortBy, maxPrice, inStockOnly]);
 
-  const hasActiveFilters = selectedCategory !== "All" || maxPrice < 4000 || inStockOnly;
+  const hasActiveFilters = selectedCategory !== "All" || maxPrice < 15000 || inStockOnly;
 
   const resetFilters = () => {
     setSelectedCategory("All");
-    setMaxPrice(4000);
+    setMaxPrice(15000);
     setInStockOnly(false);
   };
 
   return (
     <CanvasWrapper>
       <Header />
-      <CartDrawer />
 
       <main className="px-4 sm:px-6 md:px-8 lg:px-14 py-6 sm:py-10 lg:py-16 overflow-x-clip">
         {/* Page Header */}
@@ -109,7 +115,10 @@ function ProductsContent() {
         </div>
 
         {/* Category Pill Tabs (Mobile: Horizontal scroll) */}
-        <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-3 mb-6 sm:mb-8 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div
+          className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-3 mb-6 sm:mb-8 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
+          style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x" }}
+        >
           <button
             onClick={() => setSelectedCategory("All")}
             className={cn(
@@ -208,16 +217,16 @@ function ProductsContent() {
                 </div>
                 <input
                   type="range"
-                  min="1800"
-                  max="4000"
-                  step="100"
+                  min="500"
+                  max="15000"
+                  step="250"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
                   className="w-full accent-luxury-gold cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-luxury-muted">
-                  <span>₹1,800</span>
-                  <span>₹4,000</span>
+                  <span>₹500</span>
+                  <span>₹15,000</span>
                 </div>
               </div>
 
@@ -240,7 +249,22 @@ function ProductsContent() {
 
           {/* Product Grid Area (9 cols on lg:, full width on mobile) */}
           <div className="lg:col-span-9">
-            {filteredProducts.length === 0 ? (
+            {isLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="flex flex-col space-y-3 p-3 rounded-2xl bg-luxury-soft/40 border border-luxury-border/60 animate-pulse"
+                  >
+                    <div className="aspect-[3/4] w-full rounded-xl bg-luxury-border/40" />
+                    <div className="h-3 w-1/3 bg-luxury-border/40 rounded-full" />
+                    <div className="h-4 w-3/4 bg-luxury-border/50 rounded-full" />
+                    <div className="h-3 w-1/4 bg-luxury-border/40 rounded-full" />
+                    <div className="h-9 w-full bg-luxury-border/30 rounded-xl" />
+                  </div>
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="py-16 sm:py-20 text-center rounded-2xl bg-luxury-soft/30 border border-luxury-border space-y-4 px-4">
                 <h3 className="font-serif text-xl font-medium text-luxury-charcoal">
                   No Handbags Found
@@ -296,16 +320,16 @@ function ProductsContent() {
                 </div>
                 <input
                   type="range"
-                  min="1800"
-                  max="4000"
-                  step="100"
+                  min="500"
+                  max="15000"
+                  step="250"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
                   className="w-full accent-luxury-gold cursor-pointer h-2"
                 />
                 <div className="flex justify-between text-[10px] text-luxury-muted">
-                  <span>₹1,800</span>
-                  <span>₹4,000</span>
+                  <span>₹500</span>
+                  <span>₹15,000</span>
                 </div>
               </div>
 

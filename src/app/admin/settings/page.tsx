@@ -51,7 +51,7 @@ const defaultSettings: StoreSettingsData = {
   contact_phone: "+91 98200 12345",
   concierge_hours: "Mon – Sat, 10:00 AM – 8:00 PM IST",
   address: "74 Taj Mansions, Colaba Heritage Quarter, Mumbai 400005, India",
-  instagram_url: "https://instagram.com/nishya.luxury",
+  instagram_url: "https://www.instagram.com/nishya.co.in/",
   pinterest_url: "https://pinterest.com/nishya",
   shipping_policy_text:
     "Every Nishya creation is packaged in our signature archival hard box with gilded dustbag and dispatched via temperature-controlled, insured priority express courier.",

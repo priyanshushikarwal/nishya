@@ -33,10 +33,19 @@ export function CircularFeature({ content }: CircularFeatureProps = {}) {
 
   const pyramidBag = bag;
 
-  const handleAdd = () => {
+  const handleAdd = (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!pyramidBag) return;
     addToCart(pyramidBag, 1);
     setAdded(true);
+    if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+      try {
+        navigator.vibrate(35);
+      } catch {}
+    }
     setTimeout(() => setAdded(false), 2000);
   };
 
@@ -166,9 +175,11 @@ export function CircularFeature({ content }: CircularFeatureProps = {}) {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-2 max-w-lg mx-auto lg:mx-0">
               <button
+                type="button"
                 onClick={handleAdd}
                 disabled={added}
                 className="w-full sm:flex-1 flex items-center justify-center gap-2.5 py-4 px-8 rounded-full bg-[#1F1E24] text-white text-[11px] uppercase tracking-[0.2em] font-semibold hover:bg-[#B08D57] transition-all duration-300 shadow-lg shadow-[#1F1E24]/15 hover:shadow-xl cursor-pointer min-h-[52px] group"
+                style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
               >
                 {added ? (
                   <>

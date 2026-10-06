@@ -24,17 +24,26 @@ export function ProductCard({
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
 
-  const handleAdd = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleAdd = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     addToCart(product, 1);
     setIsAdded(true);
+    if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+      try {
+        navigator.vibrate(30);
+      } catch {}
+    }
     setTimeout(() => setIsAdded(false), 1800);
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleWishlist = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setIsWishlisted(!isWishlisted);
   };
 
@@ -74,13 +83,15 @@ export function ProductCard({
 
         {/* Wishlist Button (Min 44px tap target area) */}
         <button
+          type="button"
           onClick={handleWishlist}
           className={cn(
-            "absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs",
+            "absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 z-10 w-11 h-11 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs",
             isWishlisted
               ? "text-red-600 fill-red-600"
               : "text-luxury-muted hover:text-luxury-charcoal hover:scale-105"
           )}
+          style={{ touchAction: "manipulation" }}
           aria-label={`Wishlist ${product.name}`}
         >
           <Heart
@@ -120,7 +131,8 @@ export function ProductCard({
           <button
             onClick={handleAdd}
             disabled={isAdded}
-            className="w-full py-2.5 px-4 rounded-full bg-luxury-charcoal/95 hover:bg-luxury-charcoal text-white text-[11px] uppercase tracking-wider font-medium flex items-center justify-center gap-2 shadow-lg backdrop-blur-xs cursor-pointer transition-colors"
+            className="w-full py-2.5 px-4 rounded-full bg-luxury-charcoal/95 hover:bg-luxury-charcoal text-white text-[11px] uppercase tracking-wider font-medium flex items-center justify-center gap-2 shadow-lg backdrop-blur-xs cursor-pointer transition-colors min-h-[44px]"
+            style={{ touchAction: "manipulation" }}
           >
             {isAdded ? (
               <>
@@ -169,9 +181,11 @@ export function ProductCard({
         {/* Mobile-only Touch-Friendly Add to Cart Bar (< md:) */}
         <div className="md:hidden pt-1.5">
           <button
+            type="button"
             onClick={handleAdd}
             disabled={isAdded}
-            className="w-full py-2 px-2.5 rounded-lg bg-luxury-soft active:bg-luxury-charcoal active:text-white text-luxury-charcoal text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-luxury-border/80 min-h-[38px]"
+            className="w-full py-2.5 px-3 rounded-lg bg-luxury-soft active:bg-luxury-charcoal active:text-white text-luxury-charcoal text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-luxury-border/80 min-h-[44px] pointer-events-auto select-none relative z-10"
+            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
           >
             {isAdded ? (
               <>

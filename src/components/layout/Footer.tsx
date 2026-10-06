@@ -4,8 +4,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Check, ShieldCheck, RefreshCw, Truck, ChevronDown } from "lucide-react";
-import { InstagramIcon, FacebookIcon, PinterestIcon } from "@/components/decorative/SocialIcons";
+import { InstagramIcon } from "@/components/decorative/SocialIcons";
 import { cn } from "@/lib/utils";
+import { PeacockArchBorder } from "@/components/decorative/PeacockArchBorder";
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -31,7 +32,11 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative bg-[#1A191E] text-white border-t border-white/10 pt-10 sm:pt-14 lg:pt-16 pb-10 sm:pb-12 px-4 sm:px-6 md:px-8 lg:px-14 overflow-x-clip">
+    <footer className="relative bg-[#0D5153] text-white border-t border-[#F6C343]/30 overflow-x-clip">
+        {/* Top Traditional Indian Peacock Arch Border (Image 3) */}
+        <PeacockArchBorder />
+
+        <div className="pt-8 sm:pt-12 lg:pt-14 pb-10 sm:pb-12 px-4 sm:px-6 md:px-8 lg:px-14">
       {/* Luxury Value Strip Above Footer Links */}
       <div className="w-full max-w-[1360px] mx-auto pb-8 sm:pb-12 mb-8 sm:mb-12 border-b border-white/10 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-center md:text-left">
         <div className="flex items-center justify-center md:justify-start gap-3.5 sm:gap-4">
@@ -85,31 +90,13 @@ export function Footer() {
           {/* Social Icons (Min 44px tap targets) */}
           <div className="flex items-center justify-center sm:justify-start gap-3 pt-2">
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/nishya.co.in/"
               target="_blank"
               rel="noopener noreferrer"
               className="w-11 h-11 rounded-full bg-white/5 hover:bg-luxury-gold flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer"
               aria-label="Nishya on Instagram"
             >
               <InstagramIcon className="w-4 h-4" />
-            </a>
-            <a
-              href="https://facebook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-11 h-11 rounded-full bg-white/5 hover:bg-luxury-gold flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer"
-              aria-label="Nishya on Facebook"
-            >
-              <FacebookIcon className="w-4 h-4" />
-            </a>
-            <a
-              href="https://pinterest.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-11 h-11 rounded-full bg-white/5 hover:bg-luxury-gold flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer"
-              aria-label="Nishya on Pinterest"
-            >
-              <PinterestIcon className="w-4 h-4" />
             </a>
           </div>
         </div>
@@ -265,6 +252,7 @@ export function Footer() {
           <span className="hover:text-white/80 cursor-pointer transition-colors py-1">Accessibility</span>
         </div>
       </div>
-    </footer>
+        </div>
+      </footer>
   );
 }

@@ -39,7 +39,7 @@ export default function CheckoutPage() {
     city: "",
     state: "",
     postalCode: "",
-    paymentMethod: "card" as "card" | "upi" | "cod",
+    paymentMethod: "cod" as "card" | "upi" | "cod",
   });
 
   // Auto-fill from authenticated client profile
@@ -654,53 +654,57 @@ export default function CheckoutPage() {
                       2. Payment Method
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                      {/* Card via Razorpay */}
-                      <label
-                        className={`flex flex-col justify-between p-4 rounded-xl border transition-all cursor-pointer ${
-                          formData.paymentMethod === "card"
-                            ? "border-luxury-charcoal bg-luxury-soft/80 ring-1 ring-luxury-charcoal"
-                            : "border-luxury-border bg-white hover:border-luxury-border/80"
-                        }`}
+                      {/* Card via Razorpay (Disabled & Non-clickable) */}
+                      <div
+                        aria-disabled="true"
+                        className="flex flex-col justify-between p-4 rounded-xl border border-luxury-border/60 bg-neutral-100/70 opacity-60 cursor-not-allowed select-none transition-all"
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-bold text-luxury-charcoal">Card</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-luxury-charcoal/70">Card</span>
+                            <span className="text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-neutral-200/80 text-neutral-600">
+                              Unavailable
+                            </span>
+                          </div>
                           <input
                             type="radio"
-                            name="payment"
-                            checked={formData.paymentMethod === "card"}
-                            onChange={() => setFormData({ ...formData, paymentMethod: "card" })}
-                            className="text-luxury-charcoal focus:ring-0"
+                            name="payment-disabled-card"
+                            disabled
+                            checked={false}
+                            className="text-neutral-400 opacity-40 cursor-not-allowed focus:ring-0"
                           />
                         </div>
                         <span className="text-[11px] text-luxury-muted leading-tight">
                           Debit & Credit via Razorpay (Encrypted)
                         </span>
-                      </label>
+                      </div>
 
-                      {/* UPI via Razorpay */}
-                      <label
-                        className={`flex flex-col justify-between p-4 rounded-xl border transition-all cursor-pointer ${
-                          formData.paymentMethod === "upi"
-                            ? "border-luxury-charcoal bg-luxury-soft/80 ring-1 ring-luxury-charcoal"
-                            : "border-luxury-border bg-white hover:border-luxury-border/80"
-                        }`}
+                      {/* UPI via Razorpay (Disabled & Non-clickable) */}
+                      <div
+                        aria-disabled="true"
+                        className="flex flex-col justify-between p-4 rounded-xl border border-luxury-border/60 bg-neutral-100/70 opacity-60 cursor-not-allowed select-none transition-all"
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-bold text-luxury-charcoal">UPI / QR</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-luxury-charcoal/70">UPI / QR</span>
+                            <span className="text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-neutral-200/80 text-neutral-600">
+                              Unavailable
+                            </span>
+                          </div>
                           <input
                             type="radio"
-                            name="payment"
-                            checked={formData.paymentMethod === "upi"}
-                            onChange={() => setFormData({ ...formData, paymentMethod: "upi" })}
-                            className="text-luxury-charcoal focus:ring-0"
+                            name="payment-disabled-upi"
+                            disabled
+                            checked={false}
+                            className="text-neutral-400 opacity-40 cursor-not-allowed focus:ring-0"
                           />
                         </div>
                         <span className="text-[11px] text-luxury-muted leading-tight">
                           Google Pay, PhonePe, Paytm via Razorpay
                         </span>
-                      </label>
+                      </div>
 
-                      {/* Cash on Delivery */}
+                      {/* Cash on Delivery (Active & Selectable) */}
                       <label
                         className={`flex flex-col justify-between p-4 rounded-xl border transition-all cursor-pointer ${
                           formData.paymentMethod === "cod"
@@ -715,7 +719,7 @@ export default function CheckoutPage() {
                             name="payment"
                             checked={formData.paymentMethod === "cod"}
                             onChange={() => setFormData({ ...formData, paymentMethod: "cod" })}
-                            className="text-luxury-charcoal focus:ring-0"
+                            className="text-luxury-charcoal focus:ring-0 cursor-pointer"
                           />
                         </div>
                         <span className="text-[11px] text-luxury-muted leading-tight">

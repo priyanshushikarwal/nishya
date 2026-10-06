@@ -128,6 +128,26 @@ export async function getProducts(): Promise<Product[]> {
     return productsCache.data;
   }
 
+  // 1. Try Next.js internal API first if in browser
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/products", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.products) && json.products.length > 0) {
+          productsCache = {
+            data: json.products,
+            expiresAt: Date.now() + PRODUCTS_CACHE_TTL,
+          };
+          return json.products;
+        }
+      }
+    } catch (e) {
+      console.warn("[getProducts] API fetch failed, falling back to direct Supabase:", e);
+    }
+  }
+
+  // 2. Direct Supabase client query
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -137,7 +157,7 @@ export async function getProducts(): Promise<Product[]> {
         .eq("status", "published")
         .order("created_at", { ascending: false });
 
-      if (!error && Array.isArray(data)) {
+      if (!error && Array.isArray(data) && data.length > 0) {
         const mapped = data.map(mapDbToProduct);
         productsCache = {
           data: mapped,
@@ -145,9 +165,12 @@ export async function getProducts(): Promise<Product[]> {
         };
         return mapped;
       }
-    } catch {}
+    } catch (e) {
+      console.warn("[getProducts] Supabase client error:", e);
+    }
   }
 
+  // 3. Fallback to local storage / initial seed
   const local = getLocalProducts();
   productsCache = {
     data: local,
@@ -157,6 +180,20 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
+  // 1. Try Next.js internal API first if in browser
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch(`/api/products?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.products) && json.products.length > 0) {
+          return json.products[0];
+        }
+      }
+    } catch {}
+  }
+
+  // 2. Direct Supabase client query
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -172,7 +209,7 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
     } catch {}
   }
 
-  const list = getLocalProducts();
+  const list = await getProducts();
   return list.find((p) => p.slug === slug);
 }
 
@@ -198,6 +235,28 @@ export async function getCategories(): Promise<Category[]> {
     return categoriesCache.data;
   }
 
+  // 1. Try /api/categories if in browser
+  if (typeof window !== "undefined") {
+    try {
+      const res = await fetch("/api/categories", { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.categories) && json.categories.length > 0) {
+          const mapped = json.categories.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            description: c.description || "",
+            count: 0,
+          }));
+          categoriesCache = { data: mapped, expiresAt: Date.now() + 60 * 1000 };
+          return mapped;
+        }
+      }
+    } catch {}
+  }
+
+  // 2. Direct Supabase query
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();

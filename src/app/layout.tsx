@@ -1,9 +1,20 @@
-import type { Metadata } from "next";
+import React, { Suspense } from "react";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans, Caveat } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { CustomerAuthProvider } from "@/context/CustomerAuthContext";
 import { MicrosoftClarity } from "@/components/analytics/MicrosoftClarity";
+import { ScreenLoader } from "@/components/layout/ScreenLoader";
+import { CartDrawer } from "@/components/cart/CartDrawer";
+import { CartToast } from "@/components/cart/CartToast";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 const playfair = Playfair_Display({
   variable: "--font-serif",
@@ -56,10 +67,19 @@ export default function RootLayout({
       className={`${playfair.variable} ${sans.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full font-sans bg-[#E5B25D] text-luxury-charcoal selection:bg-luxury-charcoal selection:text-white">
+        {/* Centered Circular Screen Loader */}
+        <Suspense fallback={null}>
+          <ScreenLoader />
+        </Suspense>
+
         {/* Microsoft Clarity Analytics Provider (via official @microsoft/clarity package) */}
         <MicrosoftClarity />
         <CustomerAuthProvider>
-          <CartProvider>{children}</CartProvider>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+            <CartToast />
+          </CartProvider>
         </CustomerAuthProvider>
       </body>
     </html>

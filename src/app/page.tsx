@@ -16,6 +16,7 @@ import { ProductDiscovery } from "@/components/discovery/ProductDiscovery";
 import { EverydaySection } from "@/components/lifestyle/EverydaySection";
 import { UniquenessSection } from "@/components/lifestyle/UniquenessSection";
 import { InstagramGallery } from "@/components/brand/InstagramGallery";
+import { ArtisanNewsletterSection } from "@/components/promo/ArtisanNewsletterSection";
 import { HomepageSection, getHomepageSections } from "@/lib/services/cms";
 
 export default function HomePage() {
@@ -50,6 +51,8 @@ export default function HomePage() {
         return <HeroSection key="hero" />;
       case "whats_new":
         return <WhatsNewSection key="whats_new" />;
+      case "newsletter":
+        return <ArtisanNewsletterSection key="newsletter" />;
       case "brand_strip":
         return <BrandStrip key="brand_strip" />;
       case "circular_showcase":
@@ -80,8 +83,7 @@ export default function HomePage() {
         <HeroSection key="hero" />,
         <WhatsNewSection key="whats_new" />,
         <ProductDiscovery key="product_discovery" />,
-        <PromoBanner key="promo_banner" />,
-        <LifestyleModel key="lifestyle_model" />,
+        <ArtisanNewsletterSection key="newsletter" />,
       ];
 
   return (
@@ -91,9 +93,6 @@ export default function HomePage() {
 
       {/* Editorial Navigation */}
       <Header />
-
-      {/* Global Interactive Cart Drawer */}
-      <CartDrawer />
 
       {/* Main Dynamic Sections Container */}
       <main className="space-y-0 lg:space-y-12">

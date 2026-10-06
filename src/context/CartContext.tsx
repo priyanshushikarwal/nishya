@@ -30,13 +30,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
 
-  // Load from localStorage on mount asynchronously
+  // Load from localStorage on mount asynchronously with rigorous validation
   useEffect(() => {
     const timer = setTimeout(() => {
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-          setItems(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            const valid = parsed.filter(
+              (item) => item && item.product && typeof item.product.price === "number" && item.product.name
+            );
+            setItems(valid);
+          }
         }
       } catch (err) {
         console.error("Failed to load cart from storage", err);
@@ -63,17 +69,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart = useCallback(
     (product: Product, quantity = 1, selectedColor?: string) => {
-      const color = selectedColor || product.color || "Default";
+      if (!product || !product.id) return;
+      const color = selectedColor || product.color || "Signature Edition";
       setItems((prevItems) => {
         const existingIndex = prevItems.findIndex(
-          (item) => item.product.id === product.id && item.selectedColor === color
+          (item) => item?.product?.id === product.id && item.selectedColor === color
         );
 
         if (existingIndex > -1) {
           const updated = [...prevItems];
           updated[existingIndex] = {
             ...updated[existingIndex],
-            quantity: updated[existingIndex].quantity + quantity,
+            quantity: (updated[existingIndex].quantity || 1) + quantity,
           };
           return updated;
         }
@@ -83,6 +90,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       // Automatically open drawer when adding to cart
       setIsOpen(true);
+
+      // Trigger mobile haptic vibration if supported
+      if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+        try {
+          navigator.vibrate(40);
+        } catch {}
+      }
+
+      // Notify floating cart toast for 100% instant visual feedback
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("nishya_cart_item_added", {
+            detail: { product, color },
+          })
+        );
+      }
     },
     []
   );
@@ -119,8 +142,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems([]);
   }, []);
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const totalItems = items.reduce((sum, item) => sum + (Number(item?.quantity) || 0), 0);
+  const subtotal = items.reduce((sum, item) => {
+    const price = Number(item?.product?.price) || 0;
+    const qty = Number(item?.quantity) || 0;
+    return sum + price * qty;
+  }, 0);
   const freeShippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
 

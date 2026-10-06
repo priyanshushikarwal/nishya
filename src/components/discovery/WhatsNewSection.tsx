@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, ArrowRight, Check } from "lucide-react";
 import { getProducts } from "@/lib/services/products";
+import { products as initialProducts } from "@/data/products";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/utils";
@@ -16,11 +17,30 @@ interface WhatsNewSectionProps {
 export function WhatsNewSection({ content }: WhatsNewSectionProps = {}) {
   const { addToCart } = useCart();
   const [addedId, setAddedId] = useState<string | null>(null);
-  const [items, setItems] = useState<Product[]>([]);
+  const [items, setItems] = useState<Product[]>(() => {
+    return initialProducts.filter(
+      (p) =>
+        p.slug !== "penguin-bucket-rope-bag" &&
+        p.slug !== "bear-bucket-rope-bag" &&
+        !p.slug.includes("penguin") &&
+        !p.slug.includes("bear-bucket")
+    );
+  });
 
   const loadData = () => {
     getProducts().then((all) => {
-      setItems(all);
+      if (all && all.length > 0) {
+        const valid = all.filter(
+          (p) =>
+            p.slug !== "penguin-bucket-rope-bag" &&
+            p.slug !== "bear-bucket-rope-bag" &&
+            !p.slug.includes("penguin") &&
+            !p.slug.includes("bear-bucket")
+        );
+        setItems(valid);
+      } else {
+        setItems([]);
+      }
     });
   };
 
@@ -30,6 +50,8 @@ export function WhatsNewSection({ content }: WhatsNewSectionProps = {}) {
     window.addEventListener("nishya_products_updated", handleUpdate);
     return () => window.removeEventListener("nishya_products_updated", handleUpdate);
   }, []);
+
+  if (items.length === 0) return null;
 
   // Featured hero new arrival
   const featuredProduct = items[0];
@@ -44,23 +66,30 @@ export function WhatsNewSection({ content }: WhatsNewSectionProps = {}) {
   const handleAddToCart = (product: Product) => {
     addToCart(product, 1);
     setAddedId(product.id);
+    if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+      try {
+        navigator.vibrate(35);
+      } catch {}
+    }
     setTimeout(() => setAddedId(null), 2000);
   };
 
   return (
-    <section className="block lg:hidden w-full bg-white px-4 sm:px-6 pt-10 sm:pt-14 pb-12 sm:pb-16 border-b border-luxury-border/60">
-      <div className="w-full max-w-[600px] mx-auto space-y-8">
+    <section className="w-full bg-white px-4 sm:px-6 pt-8 pb-12 sm:pb-16 border-b border-luxury-border/60">
+      <div className="w-full max-w-[1360px] mx-auto">
         {/* ========================================================= */}
-        {/* 1. "WHAT'S NEW" HEADING (28–32px, Centered, Letter Spacing) */}
+        {/* 1. "NEW LAUNCH" HEADING (Image 1 Bottom)                   */}
         {/* ========================================================= */}
-        <div className="text-center space-y-2">
-          <span className="text-[10px] uppercase tracking-[0.28em] text-luxury-gold font-semibold block">
-            {seasonText}
-          </span>
-          <h2 className="font-serif text-[28px] sm:text-[32px] font-normal text-luxury-charcoal uppercase tracking-[0.16em]">
-            {headingText}
+        <div className="flex items-baseline justify-between mb-4 sm:mb-6">
+          <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#1A1A1A] uppercase">
+            NEW LAUNCH
           </h2>
-          <div className="w-10 h-[1px] bg-luxury-gold/50 mx-auto mt-2" />
+          <Link
+            href="/products"
+            className="text-xs sm:text-sm font-medium tracking-wider text-[#222222] hover:text-[#C45E35] underline underline-offset-4 uppercase transition-colors"
+          >
+            VIEW ALL PRODUCTS
+          </Link>
         </div>
 
         {/* ========================================================= */}
@@ -112,8 +141,10 @@ export function WhatsNewSection({ content }: WhatsNewSectionProps = {}) {
             {/* Action Buttons */}
             <div className="pt-2 flex items-center gap-2.5">
               <button
+                type="button"
                 onClick={() => handleAddToCart(featuredProduct)}
-                className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-luxury-charcoal text-white text-xs uppercase tracking-[0.18em] font-semibold hover:bg-luxury-gold transition-colors duration-200 cursor-pointer min-h-[44px]"
+                className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-luxury-charcoal text-white text-xs uppercase tracking-[0.18em] font-semibold hover:bg-luxury-gold transition-colors duration-200 cursor-pointer min-h-[48px]"
+                style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
               >
                 {addedId === featuredProduct.id ? (
                   <>
@@ -175,8 +206,10 @@ export function WhatsNewSection({ content }: WhatsNewSectionProps = {}) {
               </div>
 
               <button
+                type="button"
                 onClick={() => handleAddToCart(prod)}
-                className="mt-3 w-full py-2 rounded-full border border-luxury-charcoal/30 hover:bg-luxury-charcoal hover:text-white text-luxury-charcoal text-[10px] uppercase tracking-[0.15em] font-semibold transition-colors min-h-[38px] flex items-center justify-center cursor-pointer"
+                className="mt-3 w-full py-2.5 rounded-full border border-luxury-charcoal/30 hover:bg-luxury-charcoal hover:text-white text-luxury-charcoal text-[10px] uppercase tracking-[0.15em] font-semibold transition-colors min-h-[44px] flex items-center justify-center cursor-pointer"
+                style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
               >
                 {addedId === prod.id ? "Added" : "+ Add"}
               </button>

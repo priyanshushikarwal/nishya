@@ -32,13 +32,22 @@ export function InstagramGallery() {
           </h2>
           <div className="pt-1">
             <HandwrittenLabel rotate="left" color="gold" className="text-sm sm:text-base lg:text-xl">
-              Tag @nishya.luxury to be featured in our seasonal lookbook
+              Tag @nishya.co.in to be featured in our seasonal lookbook
             </HandwrittenLabel>
           </div>
         </div>
 
         {/* Gallery with Real Products */}
-        <div className="flex lg:grid lg:grid-cols-6 gap-3 sm:gap-4 overflow-x-auto pb-4 lg:pb-0 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div
+          className="flex lg:grid lg:grid-cols-6 gap-3 sm:gap-4 overflow-x-auto pb-4 lg:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
+          style={{
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch",
+            touchAction: "pan-x pan-y",
+            scrollSnapType: "x proximity",
+          }}
+        >
           {products.map((prod) => (
             <Link
               key={prod.id}

@@ -26,7 +26,12 @@
   --foreground: #242329;
 }
 
-/* Luxury smooth scroll & subtle selection */
+/* Luxury smooth scroll & mobile double-tap zoom prevention */
+html, body, button, a, img, input, select, textarea, [role="button"] {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
@@ -92,4 +97,18 @@ html {
 }
 .img-zoom:hover {
   transform: scale(1.04);
+}
+
+/* ===== PHYSICAL MOBILE DEVICE TOUCH RELIABILITY ===== */
+/* Ensure buttons are always tappable and never obscured by adjacent elements */
+button {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Prevent iOS from adding callout/action menus on long-press of buttons */
+button:focus {
+  outline: none;
 }

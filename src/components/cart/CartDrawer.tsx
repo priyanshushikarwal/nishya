@@ -23,35 +23,52 @@ export function CartDrawer() {
     isFreeShipping,
   } = useCart();
 
-  // Prevent background scrolling when drawer is open
+  const canCloseRef = React.useRef(false);
+
+  // Prevent background scrolling when drawer is open & guard against mobile ghost-clicks
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      canCloseRef.current = false;
+      const timer = setTimeout(() => {
+        canCloseRef.current = true;
+      }, 400);
+      return () => {
+        clearTimeout(timer);
+        document.body.style.overflow = "unset";
+      };
     } else {
       document.body.style.overflow = "unset";
     }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
   const progressPercent = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (!canCloseRef.current) return;
+    if (e.target === e.currentTarget) {
+      closeCart();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-[99999] overflow-hidden">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-luxury-dark/70 backdrop-blur-xs transition-opacity duration-300"
-        onClick={closeCart}
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
+        onClick={handleBackdropClick}
         aria-hidden="true"
       />
 
       {/* Slide-over panel (Mobile: 100% full-screen width, Desktop sm: max-w-md) */}
-      <div className="fixed inset-y-0 right-0 w-full sm:max-w-md flex pl-0 sm:pl-6">
+      <div
+        className="fixed inset-y-0 right-0 w-full sm:max-w-md flex pl-0 sm:pl-6 z-20 pointer-events-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <aside
-          className="w-full bg-white shadow-2xl flex flex-col justify-between border-l border-luxury-border animate-in slide-in-from-right duration-300 h-full overflow-hidden"
+          className="w-full bg-white shadow-2xl flex flex-col justify-between border-l border-luxury-border transition-transform duration-300 ease-out h-full overflow-hidden"
           aria-label="Shopping Bag"
         >
           {/* Header */}

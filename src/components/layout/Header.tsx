@@ -36,24 +36,17 @@ export function Header() {
       <header className="sticky top-0 z-40 bg-white border-b border-luxury-border/60 transition-all duration-300">
         <div className="w-full max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-12 h-14 sm:h-16 md:h-20 flex items-center justify-between">
           {/* ========================================================= */}
-          {/* MOBILE NAVBAR (< md): ☰ SEARCH | NISHYA | ♡ 🛍 👤        */}
+          {/* MOBILE NAVBAR (< md): ☰ | NISHYA | ♡ 🛍 (0) 🔍           */}
           {/* ========================================================= */}
           <div className="flex md:hidden w-full items-center justify-between">
-            {/* Left: Hamburger & Search */}
-            <div className="flex items-center gap-1">
+            {/* Left: Hamburger Menu (border boxed like reference) */}
+            <div className="flex items-center">
               <button
                 onClick={() => setIsMenuOpen(true)}
-                className="w-10 h-10 flex items-center justify-center text-luxury-charcoal hover:text-luxury-gold transition-colors cursor-pointer"
+                className="w-10 h-10 rounded-lg border border-neutral-800 flex items-center justify-center text-luxury-charcoal hover:border-luxury-gold hover:text-luxury-gold transition-colors cursor-pointer"
                 aria-label="Open menu"
               >
-                <Menu className="w-5 h-5 stroke-[1.5]" />
-              </button>
-              <button
-                onClick={() => setIsSearchOpen(true)}
-                className="w-10 h-10 flex items-center justify-center text-luxury-charcoal hover:text-luxury-gold transition-colors cursor-pointer"
-                aria-label="Search"
-              >
-                <Search className="w-5 h-5 stroke-[1.5]" />
+                <Menu className="w-5 h-5 stroke-[1.75]" />
               </button>
             </div>
 
@@ -63,19 +56,19 @@ export function Header() {
                 <Image
                   src="/images/nishya/nishya-logo.png"
                   alt="Nishya — Bags For Your Story"
-                  width={130}
-                  height={35}
+                  width={140}
+                  height={38}
                   priority
-                  className="h-7 sm:h-8 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+                  className="h-8 sm:h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03]"
                 />
               </Link>
             </div>
 
-            {/* Right: Wishlist, Shopping Bag, Account */}
-            <div className="flex items-center gap-0.5">
+            {/* Right: Wishlist, Shopping Bag with (count), Search, Profile */}
+            <div className="flex items-center gap-1 sm:gap-1.5">
               <Link
                 href="/products"
-                className="w-10 h-10 flex items-center justify-center text-luxury-charcoal hover:text-luxury-gold transition-colors"
+                className="w-8 h-8 flex items-center justify-center text-luxury-charcoal hover:text-luxury-gold transition-colors"
                 aria-label="Wishlist"
               >
                 <Heart className="w-5 h-5 stroke-[1.5]" />
@@ -83,20 +76,24 @@ export function Header() {
 
               <button
                 onClick={openCart}
-                className="relative w-10 h-10 flex items-center justify-center text-luxury-charcoal hover:text-luxury-gold transition-colors cursor-pointer"
+                className="flex items-center gap-0.5 px-1 h-8 text-luxury-charcoal hover:text-luxury-gold transition-colors cursor-pointer"
                 aria-label={`Shopping bag, ${totalItems} items`}
               >
                 <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
-                {totalItems > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-luxury-gold text-white text-[9px] font-bold flex items-center justify-center shadow-xs">
-                    {totalItems}
-                  </span>
-                )}
+                <span className="text-xs font-semibold text-luxury-charcoal">({totalItems})</span>
+              </button>
+
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="w-8 h-8 flex items-center justify-center text-luxury-charcoal hover:text-luxury-gold transition-colors cursor-pointer"
+                aria-label="Search"
+              >
+                <Search className="w-5 h-5 stroke-[1.5]" />
               </button>
 
               <Link
                 href={isAuthenticated ? "/orders" : "/login"}
-                className={`w-10 h-10 flex items-center justify-center transition-colors ${
+                className={`w-8 h-8 flex items-center justify-center transition-colors ${
                   isAuthenticated ? "text-luxury-gold" : "text-luxury-charcoal hover:text-luxury-gold"
                 }`}
                 aria-label={isAuthenticated ? "My Orders" : "Sign In"}

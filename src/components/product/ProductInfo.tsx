@@ -192,6 +192,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
           {/* Primary CTA: ADD TO BAG */}
           <button
+            type="button"
             onClick={handleAddToCart}
             disabled={isAdded}
             className={cn(
@@ -200,6 +201,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
                 ? "bg-emerald-700 text-white shadow-emerald-700/25"
                 : "bg-luxury-charcoal hover:bg-luxury-dark active:scale-[0.99] text-white shadow-luxury-charcoal/20"
             )}
+            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
           >
             {isAdded ? (
               <>
@@ -217,8 +219,10 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
         {/* Secondary CTA: BUY IT NOW */}
         <button
+          type="button"
           onClick={handleBuyNow}
           className="w-full py-4 px-6 rounded-full bg-luxury-gold hover:bg-luxury-gold-light active:scale-[0.99] text-white text-xs uppercase tracking-[0.22em] font-semibold shadow-md shadow-luxury-gold/25 transition-all duration-300 cursor-pointer min-h-[50px]"
+          style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
         >
           Instant Buy Now
         </button>

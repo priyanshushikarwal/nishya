@@ -10,7 +10,6 @@ import { useCart } from "@/context/CartContext";
 import { CanvasWrapper } from "@/components/layout/CanvasWrapper";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { CartDrawer } from "@/components/cart/CartDrawer";
 import { ProductCard } from "@/components/discovery/ProductCard";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductInfo } from "@/components/product/ProductInfo";
@@ -109,7 +108,6 @@ export function ProductDetailPageClient({
   return (
     <CanvasWrapper>
       <Header />
-      <CartDrawer />
 
       <main className="px-4 sm:px-6 md:px-8 lg:px-14 py-6 sm:py-8 lg:py-14 overflow-x-clip">
         {/* ======================================================== */}
@@ -232,9 +230,11 @@ export function ProductDetailPageClient({
         </div>
 
         <button
+          type="button"
           onClick={handleMobileAddToCart}
           disabled={isAddedMobile}
-          className="py-2.5 px-5 rounded-full bg-luxury-charcoal active:scale-95 text-white text-xs uppercase tracking-wider font-semibold flex items-center gap-1.5 shadow-md shrink-0 cursor-pointer min-h-[42px]"
+          className="py-2.5 px-5 rounded-full bg-luxury-charcoal active:scale-95 text-white text-xs uppercase tracking-wider font-semibold flex items-center gap-1.5 shadow-md shrink-0 cursor-pointer min-h-[44px]"
+          style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
         >
           {isAddedMobile ? (
             <>
