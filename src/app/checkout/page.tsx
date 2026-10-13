@@ -18,7 +18,6 @@ import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { formatPrice } from "@/lib/utils";
 import { CanvasWrapper } from "@/components/layout/CanvasWrapper";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { AuthForm } from "@/components/auth/AuthForm";
 
 export default function CheckoutPage() {
@@ -877,8 +876,6 @@ export default function CheckoutPage() {
           )}
         </div>
       </main>
-
-      <Footer />
     </CanvasWrapper>
   );
 }

@@ -21,7 +21,6 @@ import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { CanvasWrapper } from "@/components/layout/CanvasWrapper";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { formatPrice } from "@/lib/utils";
 
 interface OrderItem {
@@ -534,7 +533,7 @@ function OrdersContent() {
           </span>
         </div>
         <a
-          href="mailto:concierge@nishya.luxury"
+          href="mailto:contact@nishya.co.in"
           className="text-luxury-charcoal font-semibold hover:text-luxury-gold transition-colors underline shrink-0"
         >
           Contact Luxury Concierge
@@ -559,7 +558,6 @@ export default function OrdersPage() {
           <OrdersContent />
         </Suspense>
       </main>
-      <Footer />
     </CanvasWrapper>
   );
 }

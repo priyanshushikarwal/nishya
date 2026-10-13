@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { CanvasWrapper } from "@/components/layout/CanvasWrapper";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 
 export function ProductNotFound() {
   return (
@@ -46,7 +45,6 @@ export function ProductNotFound() {
           </div>
         </div>
       </main>
-      <Footer />
     </CanvasWrapper>
   );
 }

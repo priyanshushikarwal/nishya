@@ -9,7 +9,6 @@ import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import { CanvasWrapper } from "@/components/layout/CanvasWrapper";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { ProductCard } from "@/components/discovery/ProductCard";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductInfo } from "@/components/product/ProductInfo";
@@ -249,8 +248,6 @@ export function ProductDetailPageClient({
           )}
         </button>
       </div>
-
-      <Footer />
     </CanvasWrapper>
   );
 }

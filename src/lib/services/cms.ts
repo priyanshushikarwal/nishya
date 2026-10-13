@@ -46,7 +46,7 @@ const defaultHomepageSections: HomepageSection[] = [
   { id: "hero", title: "Hero Showcase", subtitle: "Artisan banner, categories & bestsellers", sort_order: 2, is_visible: true, content: { heading: "CARRY YOUR STORY WHEREVER YOU go.", subheading: "Bags that move with you." } },
   { id: "whats_new", title: "New Launch", subtitle: "Autumn / Winter Collection highlights", sort_order: 3, is_visible: true, content: { heading: "NEW LAUNCH", season: "Autumn / Winter 2026 Collection" } },
   { id: "product_discovery", title: "Curated Selection Grid", subtitle: "4-Column luxury handbag discovery grid", sort_order: 4, is_visible: true, content: { heading: "Discover the finest bags that combine style, elegance and perfection.", button_text: "Explore All Pieces" } },
-  { id: "promo_banner", title: "Promotional Spotlight Banner", subtitle: "Dark gilded luxury spotlight banner", sort_order: 6, is_visible: true, content: { title: "New Season, New Icons", subtitle: "Discover our latest collection crafted for modern elegance.", button_text: "Shop Now" } },
+  { id: "promo_banner", title: "Promotional Spotlight Banner", subtitle: "Dark gilded luxury spotlight banner", sort_order: 6, is_visible: false, content: { title: "New Season, New Icons", subtitle: "Discover our latest collection crafted for modern elegance.", button_text: "Shop Now" } },
   { id: "lifestyle_model", title: "Editorial Showcase", subtitle: "Effortless grace portrait model layout", sort_order: 7, is_visible: false, content: { heading: "Effortless Grace for Every Occasion", handwritten: "Designed for every occasion" } },
   { id: "brand_strip", title: "Brand Atelier Strip", subtitle: "Craftsmanship marquee", sort_order: 8, is_visible: false, content: { strip_text: "100% ITALIAN CALFSKIN • HAND-FINISHED IN JAIPUR & FLORENCE • LIFETIME ATELIER GUARANTEE" } },
   { id: "circular_showcase", title: "Featured Circular Showcase", subtitle: "The Signature Safari architectural arch spotlight", sort_order: 9, is_visible: false, content: { tagline: "The Signature Safari", subtitle: "Where artisanal craftsmanship meets everyday elegance", discount: "50%" } },
@@ -54,7 +54,7 @@ const defaultHomepageSections: HomepageSection[] = [
   { id: "uniqueness_section", title: "Designed for Uniqueness", subtitle: "Artisanal individuality magazine block", sort_order: 11, is_visible: false, content: { heading: "Designed for Uniqueness", quote: "True luxury is having what nobody else possesses." } },
   { id: "instagram_gallery", title: "Social Editorial Gallery", subtitle: "#NISHYA BAGS seasonal lookbook grid", sort_order: 12, is_visible: false, content: { hashtag: "#NISHYA BAGS", heading: "Unbox Your New Favourite" } },
   { id: "newsletter", title: "Newsletter Subscribe", subtitle: "Artisan newsletter subscription box", sort_order: 13, is_visible: true, content: {} },
-  { id: "footer", title: "Footer & WhatsApp", subtitle: "Indian peacock border teal footer", sort_order: 14, is_visible: true, content: { tagline: "Timeless handbags crafted for modern elegance.", email: "concierge@nishya.luxury" } },
+  { id: "footer", title: "Footer & WhatsApp", subtitle: "Indian peacock border teal footer", sort_order: 14, is_visible: true, content: { tagline: "Timeless handbags crafted for modern elegance.", email: "contact@nishya.co.in" } },
 ];
 
 const defaultHeroCampaigns: HeroCampaign[] = localHeroSlides.map((slide, idx) => ({

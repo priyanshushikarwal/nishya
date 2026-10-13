@@ -9,7 +9,6 @@ import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { formatPrice } from "@/lib/utils";
 import { CanvasWrapper } from "@/components/layout/CanvasWrapper";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 
 export default function CartPage() {
   const { isAuthenticated } = useCustomerAuth();
@@ -321,8 +320,6 @@ export default function CartPage() {
           )}
         </div>
       </main>
-
-      <Footer />
     </CanvasWrapper>
   );
 }

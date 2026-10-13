@@ -231,14 +231,13 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         {/* Footer info in mobile drawer */}
         <div className="pt-6 border-t border-luxury-border space-y-4">
           <div className="space-y-1.5 text-xs text-luxury-muted">
-            <div className="flex items-center gap-2">
+            <a
+              href="mailto:contact@nishya.co.in"
+              className="flex items-center gap-2 hover:text-luxury-gold transition-colors"
+            >
               <Mail className="w-4 h-4 text-luxury-gold shrink-0" />
-              <span>concierge@nishya.luxury</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-luxury-gold shrink-0" />
-              <span>+91 1800 290 888</span>
-            </div>
+              <span>contact@nishya.co.in</span>
+            </a>
           </div>
           <p className="text-xs text-luxury-muted/80 italic font-serif leading-relaxed">
             &ldquo;Crafted for elegance, designed for confidence.&rdquo;

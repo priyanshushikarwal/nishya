@@ -10,8 +10,6 @@ import { HeroSection } from "@/components/hero/HeroSection";
 import { WhatsNewSection } from "@/components/discovery/WhatsNewSection";
 import { BrandStrip } from "@/components/brand/BrandStrip";
 import { CircularFeature } from "@/components/showcase/CircularFeature";
-import { PromoBanner } from "@/components/promo/PromoBanner";
-import { LifestyleModel } from "@/components/lifestyle/LifestyleModel";
 import { ProductDiscovery } from "@/components/discovery/ProductDiscovery";
 import { EverydaySection } from "@/components/lifestyle/EverydaySection";
 import { UniquenessSection } from "@/components/lifestyle/UniquenessSection";
@@ -60,9 +58,8 @@ export default function HomePage() {
       case "product_discovery":
         return <ProductDiscovery key="product_discovery" />;
       case "promo_banner":
-        return <PromoBanner key="promo_banner" />;
       case "lifestyle_model":
-        return <LifestyleModel key="lifestyle_model" />;
+        return null;
       case "everyday_section":
         return <EverydaySection key="everyday_section" />;
       case "uniqueness_section":
@@ -74,10 +71,17 @@ export default function HomePage() {
     }
   };
 
-  // Main body sections ordered dynamically by CMS
+  // Main body sections ordered dynamically by CMS (excluding removed banners and lifestyle model)
   const mainSections = loaded
     ? sections
-        .filter((s) => s.id !== "announcement" && s.id !== "footer" && s.is_visible)
+        .filter(
+          (s) =>
+            s.id !== "announcement" &&
+            s.id !== "footer" &&
+            s.id !== "promo_banner" &&
+            s.id !== "lifestyle_model" &&
+            s.is_visible
+        )
         .map((s) => renderSection(s.id))
     : [
         <HeroSection key="hero" />,

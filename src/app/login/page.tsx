@@ -2,7 +2,6 @@ import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import { CanvasWrapper } from "@/components/layout/CanvasWrapper";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { AuthForm } from "@/components/auth/AuthForm";
 
 export const metadata: Metadata = {
@@ -33,7 +32,6 @@ export default function LoginPage() {
           <LoginContent />
         </Suspense>
       </main>
-      <Footer />
     </CanvasWrapper>
   );
 }

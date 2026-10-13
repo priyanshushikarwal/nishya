@@ -47,7 +47,7 @@ const defaultSettings: StoreSettingsData = {
   announcement_text:
     "✦ COMPLIMENTARY INSURED PRIORITY DELIVERY ON ORDERS OVER ₹5,000 | ATELIER GUARANTEE ✦",
   announcement_active: true,
-  contact_email: "concierge@nishya.luxury",
+  contact_email: "contact@nishya.co.in",
   contact_phone: "+91 98200 12345",
   concierge_hours: "Mon – Sat, 10:00 AM – 8:00 PM IST",
   address: "74 Taj Mansions, Colaba Heritage Quarter, Mumbai 400005, India",
